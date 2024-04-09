@@ -2,10 +2,12 @@
 
 Project Description
 Design and implement a Forum System and provide RESTful API that can be consumed by different clients. High-level description:
+
 •	Users can read and create topics and message other users
 •	Administrators manage users, topics and categories
-RESTful API Requirements
-MUST Requirements
+RESTful API Requirement
+
+MUST REQUIREMENTS
 Token Endpoint
 -	Accepts user login data 
 -	Responds with authentication token that can be used to access other endpoints.
@@ -44,6 +46,7 @@ Upvote/Downvote a Reply
 Choose Best Reply
 -	Requires authentication
 -	Topic Author can select one best reply to their Topic
+
 SHOULD Requirements
 Create Category
 -	Requires admin authentication
@@ -70,6 +73,7 @@ Lock Topic
 Lock Category
 -	Requires admin authentication
 -	A category can no longer accept new Topics
+
 COULD Requirements
 Create a client that consumes your RESTful API
 Guidelines
