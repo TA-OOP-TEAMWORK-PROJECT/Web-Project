@@ -33,7 +33,7 @@ class User(BaseModel):
             raise ValueError('Possibly you are not born in the future')
 
         if date_obj < min_date:
-            raise ValueError('You are not a vempire!')
+            raise ValueError('You are not a vampire!')
 
         return date_obj
 
@@ -67,7 +67,7 @@ class Category(BaseModel):
 
 class Topic(BaseModel):
 
-    id: int = None or None
+    id: int | None = None
     title: str
     cur_date: datetime.now()    #да се сетва по дефолт на днес?
     reply_cnt: int
