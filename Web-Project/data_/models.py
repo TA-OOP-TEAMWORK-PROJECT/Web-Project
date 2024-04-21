@@ -1,14 +1,20 @@
-from pydantic import BaseModel,field_validator
+from pydantic import BaseModel, field_validator, constr, conint, EmailStr
 from datetime import date, datetime  # date because it shows the date only / in the database it has time also/
+
+
+class Role:
+    ADMIN = 'admin'
+    USER = 'user'
+
 
 class User(BaseModel):
 
-    id: int = None or None
+    id: int | None = None
     username: str    # да има ли рестрикции като на базата данни, за да не гърми там, а тук
     password: str   #validator?
     first_name: str
     last_name: str
-    email: str    # email validator online through web client????
+    email: EmailStr    # email validator online through web client????
     date_of_birth: str
     admin_id: int
     token_id: int
@@ -42,13 +48,13 @@ class User(BaseModel):
 
 class Admin(BaseModel):
 
-    id: int = None or None
+    id: int | None = None
     users_id: int
     category_id: int
 
 
 class Message(BaseModel): #date na message?
-    id: int = None or None
+    id: int | None = None
     content: str
     sender_id: int
     receiver_id: int
@@ -56,7 +62,7 @@ class Message(BaseModel): #date na message?
 
 class Category(BaseModel):
 
-    id: int = None or None
+    id: int | None = None
     title: str
     description: str
     reply_cnt: int               #Трябра ли да го има в таzи таблица или, когато го визуализираме в приложението можем да отидем до базата през таблицата на Reply
@@ -67,7 +73,7 @@ class Category(BaseModel):
 
 class Topic(BaseModel):
 
-    id: int | None = None ##
+    id: int | None = None
     title: str
     cur_date: datetime.now()    #да се сетва по дефолт на днес?
     reply_cnt: int
@@ -84,11 +90,11 @@ class Topic(BaseModel):
 
 class Reply(BaseModel):
 
-    id: int = None or None
+    id: int | None = None
     cur_date: datetime.now()
     content: str
     likes_cnt: int
-    dislikes_cnt: int
+    dislikes_cnt: conint(ge=0)  ## Подсигурява, че неможем да имаме негативен брой ляйк/дисляйк, вместо проверка.
     topic_id: int
     user_id: int
     vote_id: int
@@ -97,17 +103,17 @@ class Reply(BaseModel):
     # def set_time(cls, value):
     #     return datetime.now()
 
-    @field_validator('dislikes_cnt')
-    def dislike_restr(cls, value):
-        if value < 0:
-            return 0
-        return value
+    # @field_validator('dislikes_cnt')
+    # def dislike_restr(cls, value):
+    #     if value < 0:
+    #         return 0
+    #     return value
 
 
 
 class Vote(BaseModel):
 
-    id: int = None or None
+    id: int | None = None
     upvote: int = 1
     downvote: int = 1
 
@@ -116,3 +122,8 @@ class Vote(BaseModel):
         if value < 0:
             return 0
         return value
+
+
+class Conversation(BaseModel):
+    id: int | None = None
+    content: list[Message] or None
