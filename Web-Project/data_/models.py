@@ -67,7 +67,7 @@ class Category(BaseModel):
 
 class Topic(BaseModel):
 
-    id: int | None = None
+    id: int | None = None ##
     title: str
     cur_date: datetime.now()    #да се сетва по дефолт на днес?
     reply_cnt: int
