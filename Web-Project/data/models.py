@@ -1,5 +1,5 @@
 from string import punctuation, whitespace, digits, ascii_lowercase, ascii_uppercase
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, constr
 from datetime import date, datetime
 
 
@@ -38,13 +38,7 @@ class User(BaseModel):
 
         return input_date
 
-    @field_validator('password')
-    def check_password(cls, value):
-    
-        if not is_valid_password(value):
-            raise ValueError('Invalid password')
 
-        return value
 
     @field_validator('last_name')
     def check_last_name(cls, value):
@@ -58,7 +52,22 @@ class User(BaseModel):
             return ValueError('First name must be less than 45 symbols')
         return value
 
+    @classmethod
+    def from_query_result(cls, id, username):
+        return cls(
+            id=id,
+            username=username
+        )
 
+class Role:
+    CUSTOMER = 'user'
+    ADMIN = 'admin'
+
+TUsername = constr(regex='^\w{2,30}$')
+
+class LoginData(BaseModel):
+    username = TUsername
+    password: str
 
 class Category(BaseModel):
     id: int | None 
@@ -122,51 +131,3 @@ class Vote(BaseModel):
 
 
 
-def is_valid_password(password):
-    new_password = password.strip()
-
-    MIN_SIZE = 6
-    MAX_SIZE = 50
-    password_size = len(new_password)
-
-    if password_size < MIN_SIZE or password_size > MAX_SIZE:
-        return False
-
-    valid_chars = {'-', '_', '.', '!', '@', '#', '$', '^', '&', '(', ')'}
-    invalid_chars = set(punctuation + whitespace) - valid_chars
-
-    for char in invalid_chars:
-        if char in new_password:
-            return False
-
-    password_has_digit = False
-
-    for char in password:
-        if char in digits:
-            password_has_digit = True
-            break
-
-    if not password_has_digit:
-        return False
-
-    password_has_lowercase = False
-
-    for char in password:
-        if char in ascii_lowercase:
-            password_has_lowercase = True
-            break
-
-    if not password_has_lowercase:
-        return False
-
-    password_has_uppercase = False
-
-    for char in password:
-        if char in ascii_uppercase:
-            password_has_uppercase = True
-            break
-
-    if not password_has_uppercase:
-        return False
-
-    return True
