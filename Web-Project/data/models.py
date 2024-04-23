@@ -2,7 +2,7 @@ from string import punctuation, whitespace, digits, ascii_lowercase, ascii_upper
 from pydantic import BaseModel, field_validator, constr
 from datetime import date, datetime
 
-
+TUsername = constr(pattern='^\w{2,45}$')
 
 class User(BaseModel):
     id: int | None
@@ -63,7 +63,7 @@ class Role:
     CUSTOMER = 'user'
     ADMIN = 'admin'
 
-TUsername = constr(regex='^\w{2,30}$')
+
 
 class LoginData(BaseModel):
     username = TUsername
