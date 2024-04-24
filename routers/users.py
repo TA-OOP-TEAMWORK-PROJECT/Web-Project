@@ -22,7 +22,12 @@ def register(user_data: User):
         user_data.email,
         user_data.date_of_birth,
     )
-    return user
+    if user is not None:
+        return {'message': f'User with username {user.username} has been created!'}
+    else:
+        return {'message': 'Failed to create user.'}, 500
+
+
         
 
 
