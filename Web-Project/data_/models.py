@@ -11,40 +11,62 @@ class User(BaseModel):
 
     id: int | None = None
     username: str    # да има ли рестрикции като на базата данни, за да не гърми там, а тук
-    password: str   #validator?
+    password: str | None = None
     first_name: str
     last_name: str
     email: EmailStr    # email validator online through web client????
-    date_of_birth: str
-    admin_id: int
-    token_id: int
+    date_of_birth: date
+    admin_id: int | None = None
+    token_id: int | None = None
 
-    @field_validator('username')
-    def username_rest(cls, value):
-        if len(value) > 45:
-            raise ValueError('Username is too long!')
-        return value
+    # @field_validator('username')
+    # def username_rest(cls, value):
+    #     if len(value) > 45:
+    #         raise ValueError('Username is too long!')
+    #     return value
+    #
+    # @field_validator('date_of_birth')
+    # def date_restr(cls, date_value):
+    #
+    #     date_obj = datetime.strptime(date_value, '%Y-%m-%d')
+    #     min_date = datetime.strptime('1907-01-01', '%Y-%m-%d')
+    #
+    #     year, mount, cur_date = date_value.split('/')
+    #     if not len(year) == 4 and len(mount) == 2 and len(cur_date) == 2: #при положение, че месеца и деня започва с 0
+    #         raise ValueError('Invalid date format')
+    #
+    #     if date_obj > date.today():
+    #         raise ValueError('Possibly you are not born in the future')
+    #
+    #     if date_obj < min_date:
+    #         raise ValueError('You are not a vampire!')
+    #
+    #     return date_obj
+    #
+    # class Config:
+    #     arbitrary_types_allowed = True
+    #     orm_mode = True
+    #     schema_extra = {
+    #         "example": {
+    #             "username": "johndoe",
+    #             "password": "securepassword123",
+    #             "first_name": "John",
+    #             "last_name": "Doe",
+    #             "email": "johndoe@example.com",
+    #             "date_of_birth": "1990-01-01",
+    #             "admin_id": 1,
+    #             "token_id": 2
+    #         }
+    #     }
+    #     json_encoders = {
+    #         date: lambda v: v.isoformat()
+    #     }
 
-    @field_validator('date_of_birth')
-    def date_restr(cls, date_value):
-
-        date_obj = datetime.strptime(date_value, '%Y-%m-%d')
-        min_date = datetime.strptime('1907-01-01', '%Y-%m-%d')
-
-        year, mount, cur_date = date_value.split('/')
-        if not len(year) == 4 and len(mount) == 2 and len(cur_date) == 2: #при положение, че месеца и деня започва с 0
-            raise ValueError('Invalid date format')
-
-        if date_obj > date.today():
-            raise ValueError('Possibly you are not born in the future')
-
-        if date_obj < min_date:
-            raise ValueError('You are not a vampire!')
-
-        return date_obj
 
 
-
+class LoginData(BaseModel):
+    username: str
+    password: str
 
 class Admin(BaseModel):
 
@@ -58,6 +80,12 @@ class Message(BaseModel): #date na message?
     content: str
     sender_id: int
     receiver_id: int
+    created_at: datetime = datetime.now()
+
+
+class MessageCreate(BaseModel):
+    content: str
+    received_id: int
 
 
 class Category(BaseModel):
@@ -75,7 +103,7 @@ class Topic(BaseModel):
 
     id: int | None = None
     title: str
-    cur_date: datetime.now()    #да се сетва по дефолт на днес?
+    cur_date: datetime = datetime.now()    #да се сетва по дефолт на днес?
     reply_cnt: int
     view_cnt: int
     last_reply: str
@@ -91,7 +119,7 @@ class Topic(BaseModel):
 class Reply(BaseModel):
 
     id: int | None = None
-    cur_date: datetime.now()
+    cur_date: datetime = datetime.now()
     content: str
     likes_cnt: int
     dislikes_cnt: conint(ge=0)  ## Подсигурява, че неможем да имаме негативен брой ляйк/дисляйк, вместо проверка.
@@ -112,16 +140,11 @@ class Reply(BaseModel):
 
 
 class Vote(BaseModel):
+    users_id: int | None = None
+    reply_id: int | None = None
+    vote: int | None = None
 
-    id: int | None = None
-    upvote: int = 1
-    downvote: int = 1
 
-    @field_validator('dislikes_cnt')
-    def downvote_restr(cls, value):
-        if value < 0:
-            return 0
-        return value
 
 
 class Conversation(BaseModel):
