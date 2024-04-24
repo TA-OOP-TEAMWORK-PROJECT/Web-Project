@@ -1,29 +1,42 @@
+from string import punctuation, whitespace, digits, ascii_lowercase, ascii_uppercase
+from typing import Optional, List
 from data.models import *
-from data.database import *
+from data.database import read_query, insert_query
 from mariadb import IntegrityError
-
+from fastapi import HTTPException
 
 _SEPARATOR = ';'
 
 
-def create(username: str, password: str) -> User | None:
-    
+
+
+def create(username: str, password: str, first_name: str, last_name: str, email: str, date_of_birth: date) -> User | None:
     try:
-        generated_id = insert_query(
-            'INSERT INTO users(username, password, role) VALUES (?,?,?)',
-            (username, password, Role.CUSTOMER))
-        return User(id=generated_id, username=username, password='', role=Role.CUSTOMER)
-    except IntegrityError:
+       
+        existing_user = read_query('SELECT id FROM users WHERE username = ?', (username,))
+        if existing_user:
+            raise HTTPException(status_code=400, detail=f'Username {username} is taken.')
         
+        generated_id = insert_query(
+            'INSERT INTO users(username, password, first_name, last_name, email, date_of_birth) VALUES (?,?,?,?,?,?)',
+            (username, password, first_name, last_name, email, date_of_birth))
+
+        return User(id=generated_id, username=username, password='', first_name=first_name, last_name=last_name, email=email, date_of_birth=date_of_birth)
+
+    except IntegrityError:
         return None
 
 
 
 
-def get_all(id=None):
-    sql = '''SELECT id FROM users'''
 
-    return (User.from_query_result(*row) for row in read_query(sql))
+
+
+def all():
+    data = read_query('''SELECT id, username, password, first_name, last_name, email, date_of_birth FROM users''')
+    return (User.from_query_result(*row) for row in data)
+
+
 
 
 
@@ -100,9 +113,6 @@ def is_valid_password(password):
 
 
 def validate_input(username: str) -> bool:
-    
     if len(username) < 4 or len(username) > 45:
-        return False
-    if is_valid_password==False:
         return False
     return True
