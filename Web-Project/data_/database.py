@@ -5,19 +5,28 @@ from mariadb.connections import Connection
 def _get_connection() -> Connection:
     return connect(
         user='root',
-        password='root',
+        password='b0t1ick0',
         host='localhost',
         port=3306,
         database='web_project'
     )
 
 
+# def read_query(sql: str, sql_params=()):
+#     with _get_connection() as conn:
+#         cursor = conn.cursor(dict)
+#         cursor.execute(sql, sql_params)
+#
+#         return list(cursor)
+
 def read_query(sql: str, sql_params=()):
     with _get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(sql, sql_params)
+        column_names = [desc[0] for desc in cursor.description]
 
-        return list(cursor)
+        result = [dict(zip(column_names, row)) for row in cursor.fetchall()]
+        return result
 
 
 def insert_query(sql: str, sql_params=()) -> int:

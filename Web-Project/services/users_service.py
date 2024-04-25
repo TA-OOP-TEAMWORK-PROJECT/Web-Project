@@ -1,11 +1,9 @@
 from string import punctuation, whitespace, digits, ascii_lowercase, ascii_uppercase
-from typing import Optional, List
 from data_.models import *
 from data_.database import read_query, insert_query
 from mariadb import IntegrityError
 from fastapi import HTTPException, Header, Depends
-import jwt
-from typing import Optional
+
 
 _SEPARATOR = ';'
 ALGORITHM = "HS256"
@@ -36,15 +34,17 @@ def try_login(username: str, password: str) -> User | None:
     return user if user and user.password == password else None
 
 
-def create_access_token(user: User) -> dict:
+def create_access_token(user: User) -> str:
     # note: this token is not particulary secure, use JWT for real-world uses
-    username = f'{user.id}{_SEPARATOR}{user.username}'
-
-    passw = [str(ord(p) + 10) for p in user.password]
-    user.password = ''.join(passw)
-
-    return {'username': username,
-            'password': user.password}
+    # username = f'{user.id}{_SEPARATOR}{user.username}'
+    #
+    # passw = [str(ord(p) + 10) for p in user.password]
+    # user.password = ''.join(passw)
+    #
+    # return {'username': username,
+    #         'password': user.password}
+    token = f"{user.id}{_SEPARATOR}{user.username}"
+    return token
 
 
 
@@ -60,25 +60,24 @@ def find_by_username(username: str) -> User | None:
         last_name, email, date_of_birth
         FROM users WHERE username = ?''',
         (username,))
-
     return next((User.from_query_result(*row) for row in data), None)
 
 
-
 def is_authenticated(token: str) -> bool:
-    return any(read_query(
-        'SELECT 1 '
-        'FROM users '
-        'where id = ? and username = ?',
+    try:
+        user_id, username = token.split(_SEPARATOR)
+        return any(read_query(
+            'SELECT 1 FROM users WHERE id = ? AND username = ?',
+            (user_id, username)
+        ))
+    except ValueError:
+        return False
 
-        token.split(_SEPARATOR)))
 
-
-def get_token_header(token: str = Header()):
-    if not is_authenticated(token):
+def get_token_header(token: str = Header(None)):
+    if token is None or not is_authenticated(token):
         raise HTTPException(status_code=401, detail="Invalid or missing token")
-
-    return token  #!!
+    return token
 
 
 

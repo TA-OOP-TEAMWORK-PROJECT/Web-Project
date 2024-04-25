@@ -7,8 +7,8 @@ from common.responses import MessageServiceError
 message_router = APIRouter(prefix='/messages', tags=["Messages"])
 
 
-@message_router.post('/', response_model=Message)
-def create_message(message: MessageCreate, token: str = Depends(get_token_header())):
+@message_router.post('/', response_model=Message) ## Работи с ръчно сложен токън в хедъра.
+def create_message(message: MessageCreate, token: str = Depends(get_token_header)):
     try:
         return message_service.create_message(message, token)
     except MessageServiceError as e:
@@ -16,7 +16,7 @@ def create_message(message: MessageCreate, token: str = Depends(get_token_header
 
 
 @message_router.get("/{user_id}", response_model=list[Message])
-def get_conversation_endpoint(user_id: int, token: str = Depends(get_token_header())):
+def get_conversation_endpoint(user_id: int, token: str = Depends(get_token_header)):
     try:
         return message_service.get_conversation(user_id, token)
     except MessageServiceError as e:
@@ -24,7 +24,7 @@ def get_conversation_endpoint(user_id: int, token: str = Depends(get_token_heade
 
 
 @message_router.get("/", response_model=list[User])
-def get_conversations_endpoint(token: str = Depends(get_token_header())):
+def get_conversations_endpoint(token: str = Depends(get_token_header)):
     try:
         return message_service.get_conversations(token)
     except MessageServiceError as e:

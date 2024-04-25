@@ -19,48 +19,23 @@ class User(BaseModel):
     admin_id: int | None = None
     token_id: int | None = None
 
-    # @field_validator('username')
-    # def username_rest(cls, value):
-    #     if len(value) > 45:
-    #         raise ValueError('Username is too long!')
-    #     return value
-    #
-    # @field_validator('date_of_birth')
-    # def date_restr(cls, date_value):
-    #
-    #     date_obj = datetime.strptime(date_value, '%Y-%m-%d')
-    #     min_date = datetime.strptime('1907-01-01', '%Y-%m-%d')
-    #
-    #     year, mount, cur_date = date_value.split('/')
-    #     if not len(year) == 4 and len(mount) == 2 and len(cur_date) == 2: #при положение, че месеца и деня започва с 0
-    #         raise ValueError('Invalid date format')
-    #
-    #     if date_obj > date.today():
-    #         raise ValueError('Possibly you are not born in the future')
-    #
-    #     if date_obj < min_date:
-    #         raise ValueError('You are not a vampire!')
-    #
-    #     return date_obj
-    #
-    # class Config:
-    #     arbitrary_types_allowed = True
-    #     orm_mode = True
-    #     schema_extra = {
-    #         "example": {
-    #             "username": "johndoe",
-    #             "password": "securepassword123",
-    #             "first_name": "John",
-    #             "last_name": "Doe",
-    #             "email": "johndoe@example.com",
-    #             "date_of_birth": "1990-01-01",
-    #             "admin_id": 1,
-    #             "token_id": 2
-    #         }
-    #     }
-    #     json_encoders = {
-    #         date: lambda v: v.isoformat()
-    #     }
+    @classmethod
+    def from_query_result(cls, id: int, username: str, password: str, first_name: str, last_name: str, email: str,
+                          date_of_birth: date):
+        return cls(id=id, username=username, password=password, first_name=first_name, last_name=last_name, email=email,
+                   date_of_birth=date_of_birth)
+
+    def is_admin(self):
+        return self.role == Role.ADMIN
+
+    @field_validator('date_of_birth')
+    def date_restr(cls, value):
+        if isinstance(value, str):
+            try:
+                return date.fromisoformat(value)
+            except ValueError:
+                raise ValueError(f"Invalid date format: {value}")
+        return value
 
 
 
@@ -85,7 +60,7 @@ class Message(BaseModel): #date na message?
 
 class MessageCreate(BaseModel):
     content: str
-    received_id: int
+    receiver_id: int
 
 
 class Category(BaseModel):

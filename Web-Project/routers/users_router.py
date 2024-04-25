@@ -7,7 +7,7 @@ from common.auth import *
 from common.responses import *
 from fastapi import HTTPException
 
-users_router = APIRouter(prefix='/users')
+users_router = APIRouter(prefix='/users', tags=["Users"])
 
 @users_router.get('/info')   #admin
 def users_info(x_token: str = Header()):
@@ -35,8 +35,7 @@ def login(login_data: LoginData):
 
     if user:
         token = users_service.create_access_token(user)
-        return token
-        # return {'message': f'Username {user.username} is logged in!'}
+        return {"access_token": token, "token_type": "Bearer"}
     else:
         return BadRequest('Invalid login data')
 
