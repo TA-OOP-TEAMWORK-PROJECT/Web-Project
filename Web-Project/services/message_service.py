@@ -1,12 +1,12 @@
 from data_.models import Message, MessageCreate, User
 from data_.database import insert_query, read_query
-from services.users_service import get_user_id_from_token
+from services.users_service import is_authenticated
 from common.responses import MessageServiceError
 import datetime
 
 
 def create_message(message_data: MessageCreate, token: str):
-    user_id = get_user_id_from_token(token)
+    user_id = is_authenticated(token)
     if user_id is None:
         raise MessageServiceError("Invalid user.")
     message_id = insert_query(
@@ -17,7 +17,7 @@ def create_message(message_data: MessageCreate, token: str):
 
 
 def get_conversation(user_id: int, token: str):
-    current_user_id = get_user_id_from_token(token)
+    current_user_id = is_authenticated(token)
     if current_user_id is None:
         raise MessageServiceError("Invalid user.")
 
@@ -29,7 +29,7 @@ def get_conversation(user_id: int, token: str):
 
 
 def get_conversations(token: str):
-    user_id = get_user_id_from_token(token)
+    user_id = is_authenticated(token)
     if user_id is None:
         raise MessageServiceError("Invalid user.")
 

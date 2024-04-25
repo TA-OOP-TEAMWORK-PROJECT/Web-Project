@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_validator, constr, conint, EmailStr
 from datetime import date, datetime  # date because it shows the date only / in the database it has time also/
 
 
-class Role:
+class Role:  #Да се ориентираме по-лесно
     ADMIN = 'admin'
     USER = 'user'
 
