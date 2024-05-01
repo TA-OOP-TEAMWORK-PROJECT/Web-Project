@@ -63,7 +63,13 @@ def find_by_username(username: str) -> User | None:
 
     return next((User.from_query_result(*row) for row in data), None)
 
+def find_by_id(id):
+    data = read_query(
+        '''SELECT username
+        FROM users WHERE id = ?''',
+        (id,))
 
+    return data[0][0]
 
 def is_authenticated(token: str) -> bool:
     return any(read_query(

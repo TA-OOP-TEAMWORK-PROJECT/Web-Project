@@ -13,6 +13,26 @@ def get_by_id(id):
     return Reply.from_query_result(*data[0])
 
 
+def get_reply(user):
+
+    user_data = read_query('''
+    SELECT user_id
+    FROM topic
+    WHERE id = ?''',
+    (user.id))
+
+    if user.user_id == user_data:
+        data = read_query('''
+        SELECT id, date, content, likes_cnt, dislike_cnt, topic_id, user_id
+        FROM reply
+        WHERE id = ?''',
+        (input(), ))
+
+        return create_reply_response(data[0])
+
+    return
+
+
 def create(reply):
 
     generated_id = insert_query('''
@@ -43,24 +63,31 @@ def create_vote(new_vote:Vote):
     new_vote.id = generated_id
     return new_vote
 
-def vote_change(new_vote:Vote, old_vote_data, reply):
+def vote_change(new_vote:Vote, reply):
 
-    update_query('''
-    DELETE  FROM vote
-    WHERE reply_id = ?''',
-                 (reply.id,))
+    if new_vote.vote == 1:
 
-    insert_query('''
-    INSERT INTO vote(reply_id, sender_id, vote)
-    VALUES(?,?,?)''',
-                 (reply.id, old_vote_data[1], new_vote.vote))
+        if not reply.dislikes_cnt == 0:
+            reply.dislikes_cnt -= 1
+        reply.likes_cnt += 1
 
-    if reply.is_voted_cnt is None:
-        reply.is_voted_cnt = 1
-    else:
-        reply.is_voted_cnt += 1
+        update_query('''
+        UPDATE reply
+        SET likes_cnt''',
+                 (reply.likes_cnt, ))
 
-    return new_vote.vote
+    if new_vote.vote == 0:
+        if not reply.likes_cnt == 0:
+            reply.likes_cnt -= 1
+        reply.dislikes_cnt += 1
+        update_query('''
+        UPDATE reply
+        SET dislike_cnt = ?''',
+                 (reply.dislikes_cnt, ))
+
+
+    return 'Vote has been changed'
+
 
 def get_vote_by_reply_id(id):
     data = read_query('''

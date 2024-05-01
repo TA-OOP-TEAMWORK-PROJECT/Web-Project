@@ -98,19 +98,21 @@ class Reply(BaseModel):
     id: int = None or None
     cur_date: datetime = datetime.now()
     content: str
-    likes_cnt: conint(ge=0)
-    dislikes_cnt: conint(ge=0)  ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
+    likes_cnt: conint(ge=0) = None or None
+    dislikes_cnt: conint(ge=0) = None or None ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
     topic_id: int
+    user_id: int
 
     @classmethod
-    def from_query_result(cls, id, cur_date, content, likes_cnt, dislikes_cnt, topic_id):
+    def from_query_result(cls, id, cur_date, content, likes_cnt, dislikes_cnt, topic_id, user_id):
         return cls(
             id=id,
             cur_date=cur_date,
             content=content,
             likes_cnt=likes_cnt,
             dislikes_cnt=dislikes_cnt,
-            topic_id=topic_id)
+            topic_id=topic_id,
+            user_id=user_id)
 
 
 class Vote(BaseModel):

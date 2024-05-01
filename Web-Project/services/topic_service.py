@@ -72,8 +72,7 @@ def create_topic_response(topic):
     return {
         'title': topic.title,
         'date of publication': topic.cur_date,
-        'published by': f'{user['first_name']} {user['last_name']}',
-        'category title': f'{category['title']}'
+        'published by': f'{user}',
+        'category title': f'{category}'
     }
-
 

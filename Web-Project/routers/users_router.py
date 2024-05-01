@@ -4,7 +4,7 @@ from services.users_service import *
 from services import users_service
 from data_.models import *
 from common.auth import *
-from common.responses import *
+# from common.responses import *
 from fastapi import HTTPException
 
 users_router = APIRouter(prefix='/users')
@@ -38,8 +38,7 @@ def login(login_data: LoginData):
         return token
         # return {'message': f'Username {user.username} is logged in!'}
     else:
-        return BadRequest('Invalid login data')
-
+        return Response(status_code=404, content='Invalid login data')  #BadRequest('Invalid login data')
 
 
 @users_router.get('/')
