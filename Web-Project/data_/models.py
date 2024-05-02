@@ -1,6 +1,8 @@
 from pydantic import BaseModel, field_validator, constr, conint, EmailStr
 from datetime import date, datetime  # date because it shows the date only / in the database it has time also/
 
+from common import auth
+
 
 class Role:
 
@@ -11,13 +13,21 @@ class User(BaseModel):
 
     id: int = None or None
     username: str    # да има ли рестрикции като на базата данни, за да не гърми там, а тук
+    password: str
     first_name: str
     last_name: str
     email: EmailStr    # email validator online through web client????
     date_of_birth: date = None or None
     admin_id: int = None or None
-    disabled: bool | None = None
+    hashed_password: str = None or None
+    # disabled: bool | None = None
     #     password: str | None = None
+
+    # @field_validator('hashed_password')
+    # def hash_password(cls, User.password):
+    #     # pass_value = auth.get_password_hash(pass_value)
+    #     return pass_value
+
 
     @classmethod
     def from_query_result(cls, id: int, username: str, password: str, first_name: str, last_name: str, email: str,

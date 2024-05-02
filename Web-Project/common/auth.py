@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from data_.models import User, TokenData, UserInDB
+from services.users_service import find_by_username
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -13,17 +14,26 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 
 #read_query/create response
-fake_users_db = {
-    "minko69": {
-        "id": 4,
-        "username": "minko69",
-        "first_name": "Minko",
-        "last_name": "Praznikov",
-        "email": "minko@teenproblem.bg",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-        "disabled": False
+
+def current_user(username):
+
+    user = find_by_username(username)
+
+    users_db = {
+        user.username: {
+            "id": user.id,
+            "username": user.username,
+            "password": user.password,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "hashed_password": user.hashed_password
+            # "disabled": False
+        }
     }
-}
+
+    return users_db
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

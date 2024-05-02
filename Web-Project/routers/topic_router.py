@@ -7,6 +7,7 @@ from common.auth import User, get_current_active_user, get_current_user
 from data_.models import Topic
 from services import topic_service, reply_service
 
+
 topic_router = APIRouter(prefix='/topic')
 
 @topic_router.get('/')

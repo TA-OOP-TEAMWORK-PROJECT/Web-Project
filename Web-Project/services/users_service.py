@@ -16,12 +16,15 @@ def create(username: str, password: str, first_name: str, last_name: str, email:
     if existing_user:
         raise HTTPException(status_code=400, detail=f'Username {username} is taken.')
 
-    generated_id = insert_query(
-        'INSERT INTO users(username, password, first_name, last_name, email, date_of_birth) VALUES (?,?,?,?,?,?)',
-        (username, password, first_name, last_name, email, date_of_birth))
+    hash_password = auth.get_password_hash(password)
 
-    return User(id=generated_id, username=username, password='', first_name=first_name, last_name=last_name,
-                email=email, date_of_birth=date_of_birth)
+    generated_id = insert_query(
+        'INSERT INTO users(username, password, first_name, last_name, email, date_of_birth, hashed_password) VALUES (?,?,?,?,?,?,?)',
+        (username, password, first_name, last_name, email, date_of_birth, hash_password))
+
+
+    return  User(id=generated_id, username=username, password='', first_name=first_name, last_name=last_name,
+                email=email, date_of_birth=date_of_birth, hashed_password=hash_password)
 
 
 def all():  # само за админ
@@ -57,7 +60,7 @@ def from_token(token: str) -> User | None:
 def find_by_username(username: str) -> User | None:
     data = read_query(
         '''SELECT id, username, password, first_name,
-        last_name, email, date_of_birth
+        last_name, email, date_of_birth, hashed_password
         FROM users WHERE username = ?''',
         (username,))
 
