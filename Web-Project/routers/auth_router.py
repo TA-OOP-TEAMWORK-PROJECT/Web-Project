@@ -1,29 +1,19 @@
 from datetime import timedelta
 from typing import Annotated
-
-
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
 from starlette import status
-from starlette.requests import Request
-
-from common.auth import ACCESS_TOKEN_EXPIRE_MINUTES, Token, authenticate_user, fake_users_db, create_access_token, User, \
-    get_current_active_user
+from data_.models import LoginData, Token, User
+from common.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user,
+                         fake_users_db, create_access_token, get_current_active_user)
 
 auth_router = APIRouter(prefix='/auth')
 
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
 @auth_router.post("/token")
 async def login_for_access_token(
-
-    form_data: UserLogin
+    form_data: LoginData
 ) -> Token:
+
     user = authenticate_user(fake_users_db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -39,14 +29,52 @@ async def login_for_access_token(
 
 
 @auth_router.get("/users/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
+async def read_users_me(current_user: Annotated[User, Depends(get_current_active_user)]):
+
     return current_user
 
 
-@auth_router.get("/users/me/items/")
-async def read_own_items(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return [{"item_id": "Foo", "owner": current_user.username}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @auth_router.get("/users/me/items/")
+# async def read_own_items(current_user: Annotated[User, Depends(get_current_active_user)]):
+#
+#     return [{"item_id": "Foo", "owner": current_user.username}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from fastapi.security import OAuth2PasswordRequestForm
+# from pydantic import BaseModel
+# from starlette.requests import Request

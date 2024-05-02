@@ -9,15 +9,15 @@ class Role:
 
 class User(BaseModel):
 
-    id: int | None = None
+    id: int = None or None
     username: str    # да има ли рестрикции като на базата данни, за да не гърми там, а тук
-    password: str | None = None
     first_name: str
     last_name: str
     email: EmailStr    # email validator online through web client????
-    date_of_birth: date
-    admin_id: int | None = None
-    token_id: int | None = None
+    date_of_birth: date = None or None
+    admin_id: int = None or None
+    disabled: bool | None = None
+    #     password: str | None = None
 
     @classmethod
     def from_query_result(cls, id: int, username: str, password: str, first_name: str, last_name: str, email: str,
@@ -28,11 +28,23 @@ class User(BaseModel):
     def is_admin(self):
         return self.role == Role.ADMIN
 
+class UserInDB(User):
+    hashed_password: str
+
 
 class LoginData(BaseModel):
 
     username: str
     password: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None
 
 
 class Admin(BaseModel):
@@ -54,7 +66,7 @@ class Message(BaseModel):
 class MessageCreate(BaseModel):
 
     content: str
-    received_id: int
+    receiver_id: int
 
 
 class Category(BaseModel):
@@ -98,10 +110,10 @@ class Reply(BaseModel):
     id: int = None or None
     cur_date: datetime = datetime.now()
     content: str
-    likes_cnt: conint(ge=0) = None or None
-    dislikes_cnt: conint(ge=0) = None or None ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
+    likes_cnt: int = None or None
+    dislikes_cnt: int = None or None ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
     topic_id: int
-    user_id: int
+
 
     @classmethod
     def from_query_result(cls, id, cur_date, content, likes_cnt, dislikes_cnt, topic_id, user_id):

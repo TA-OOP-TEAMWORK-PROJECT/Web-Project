@@ -1,13 +1,10 @@
-
-
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from pydantic import BaseModel
+from data_.models import User, TokenData, UserInDB
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -15,42 +12,21 @@ SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 
-
+#read_query/create response
 fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
+    "minko69": {
+        "id": 4,
+        "username": "minko69",
+        "first_name": "Minko",
+        "last_name": "Praznikov",
+        "email": "minko@teenproblem.bg",
         "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-        "disabled": False,
+        "disabled": False
     }
 }
 
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    username: str | None = None
-
-
-class User(BaseModel):
-    username: str
-    email: str | None = None
-    full_name: str | None = None
-    disabled: bool | None = None
-
-
-class UserInDB(User):
-    hashed_password: str
-
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 app = FastAPI()
 
 
@@ -114,3 +90,61 @@ async def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# {
+#     "username":"johndoe",
+#     "password":"secret"
+# }
+
+
+# {
+#     "username":"minko69",
+#     "password":"secret"
+# }
+
+#
+# class Token(BaseModel):
+#     access_token: str
+#     token_type: str
+#
+#
+# class TokenData(BaseModel):
+#     username: str | None = None
+#
+#
+# class User(BaseModel):
+#     username: str
+#     email: str | None = None
+#     full_name: str | None = None
+#     disabled: bool | None = None
+#
+#
+# class UserInDB(User):
+#     hashed_password: str
+
+
+
+
+
+

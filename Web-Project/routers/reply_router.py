@@ -1,5 +1,8 @@
-from fastapi import APIRouter, Response, Header
+from typing import Annotated
 
+from fastapi import APIRouter, Response, Header, Depends
+
+from common.auth import get_current_active_user, User, get_current_user
 # from common.auth import get_user_or_raise_401
 from data_.models import Reply, Vote
 from services import reply_service
@@ -13,30 +16,21 @@ Choose Best Reply
 - Topic Author can select one best reply to their Topic
 '''
 
-# @reply_router.get('/{id}')  # да попитам дали така е ок
-# def view_reply(x_token=Header()):
-#
-#     user = get_user_or_raise_401(x_token)
-#     result = reply_service.get_reply(user)
-#
-#     if result:
-#         return result
-#
-#     else:
-#         return Response(status_code=401)
+
 
 
 @reply_router.post("/")
-def create_reply(reply: Reply):
+def create_reply(reply: Reply, current_user: Annotated[User, Depends(get_current_active_user)]):
 
     reply = reply_service.create(reply)
 
     return reply_service.create_reply_response(reply)  # user
 
-@reply_router.put("/{id}")
-def change_vote(new_vote:Vote, id:int): #user
+@reply_router.put("/{id}/vote")
+def change_vote(new_vote:Vote, id:int, current_user: Annotated[User, Depends(get_current_active_user)]): #user
 
-    reply = reply_service.get_by_id(id)   #  за да добавям лайкова или дислайкове
+
+    reply = reply_service.get_by_id(id)
 
 
     return reply_service.vote_change(new_vote, reply)
