@@ -45,15 +45,10 @@ def create_topic(topic: Topic, current_user: Annotated[User, Depends(get_current
     return topic_service.create_topic_response(topic) # user
 
 
-@topic_router.put('/{topic_id}/{reply_id}')  # TODO
+@topic_router.put('/{topic_id}/{reply_id}')  # !!!
 def view_reply(topic_id, reply_id, current_user: Annotated[User, Depends(get_current_user)]):
 
-    a = current_user
-    b = a.username
-    result = reply_service.get_reply(1)
 
-    if result:
-        return result
+    return topic_service.best_reply(topic_id, reply_id, current_user)
 
-    else:
-        return Response(status_code=401)
+

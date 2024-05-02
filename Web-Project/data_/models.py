@@ -90,7 +90,7 @@ class Topic(BaseModel):
     last_reply: str | None = None
     user_id: int
     category_id: int
-
+    best_reply :int = None or None
     @classmethod
     def from_query_result(cls, id, title, cur_date, reply_cnt,
                           view_cnt, last_reply, user_id, category_id):

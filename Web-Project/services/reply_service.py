@@ -13,25 +13,6 @@ def get_by_id(id):
     return Reply.from_query_result(*data[0])
 
 
-def get_reply(user):
-
-    user_data = read_query('''
-    SELECT user_id
-    FROM topic
-    WHERE id = ?''',
-    (user.id))
-
-    if user.user_id == user_data:
-        data = read_query('''
-        SELECT id, date, content, likes_cnt, dislike_cnt, topic_id, user_id
-        FROM reply
-        WHERE id = ?''',
-        (input(), ))
-
-        return create_reply_response(data[0])
-
-    return
-
 
 def create(reply):
 
