@@ -9,9 +9,9 @@ from fastapi import HTTPException
 
 users_router = APIRouter(prefix='/users')
 
-@users_router.get('/info')   #admin
-def users_info(x_token: str = Header()):
-    return get_user_or_raise_401(x_token)
+# @users_router.get('/info')   #admin
+# def users_info(x_token: str = Header()):
+#     return get_user_or_raise_401(x_token)
 
 
 @users_router.post('/register')

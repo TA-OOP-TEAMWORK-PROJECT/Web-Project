@@ -9,15 +9,6 @@ from services import reply_service
 
 reply_router = APIRouter(prefix='/reply')
 
-'''
-Choose Best Reply
-
-- Requires authentication
-- Topic Author can select one best reply to their Topic
-'''
-
-
-
 
 @reply_router.post("/")
 def create_reply(reply: Reply, current_user: Annotated[User, Depends(get_current_active_user)]):
