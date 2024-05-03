@@ -27,7 +27,7 @@ def get_conversation_endpoint(user_id: int, current_user: Annotated[User, Depend
     #     raise HTTPException(status_code=404, detail=str(e))
 
 
-@message_router.get("/", response_model=list[User])
+@message_router.get("/")
 def get_conversations_endpoint(current_user: Annotated[User, Depends(get_current_active_user)]):
 
     return message_service.get_conversations(current_user)

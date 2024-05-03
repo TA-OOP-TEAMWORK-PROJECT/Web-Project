@@ -44,16 +44,21 @@ def get_conversations(user: User):
         SELECT DISTINCT users.username
         FROM users
         JOIN message ON users.id = message.sender_id OR users.id = message.receiver_id
-        WHERE message.sender_id = %s OR message.receiver_id = %s
+        WHERE message.sender_id = ? OR message.receiver_id = ?
         """,
         (user.id, user.id)
     )
 
-    a = [Conversation(username=row[0]) for row in users]
-    result = get_conv_response(a)
+    # data = [Conversation(username=row[0]) for row in users]
+    data = [row[0] for row in users]
 
-    a = 5
-    return result
+
+    return [
+        {
+            'Username': f'{info}'
+        } for info in data
+    ]
+
 
 def get_conv_response(conv):
     cnt = 0

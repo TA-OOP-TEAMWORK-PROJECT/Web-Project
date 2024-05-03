@@ -116,28 +116,31 @@ class Topic(BaseModel):
 
 
 class Category(BaseModel):
-    id: int  = None or None
-    title: str = None or None
-    description: str = None or None
-    reply_cnt: int  = None or None # Трябра ли да го има в таzи таблица или, когато го визуализираме в приложението можем да отидем до базата през таблицата на Reply
-    last_topic: str = None or None
-    topic_cnt: int = None or None
-    user_id: int = None or None
+    id: int | None = None
+    title: str
+    description: str
+    reply_cnt: int | None
+    last_topic: str | None
+    topic_cnt: int | None
+    user_id: int
     # topics: list[Topic] = None or None
 
     @classmethod
     def from_query_result(cls, id, title, description, reply_cnt,
-                          last_topic, topic_cnt, user_id
+                          last_topic, topic_cnt , user_id
     ):
+
+
         return cls(
-            id=id,
-            title=title,
-            description=description,
-            reply_cnt=reply_cnt,
-            last_topic=last_topic,
-            topic_cnt=topic_cnt,
-            user_id=user_id
-        )
+                    id=id,
+                    title=title,
+                    description=description,
+                    reply_cnt=0 if reply_cnt == None else reply_cnt,
+                    last_topic='There are no topics on this category yet'
+                                if last_topic == None else last_topic,
+                    topic_cnt=0 if topic_cnt == None else topic_cnt,
+                    user_id=user_id or None
+                )
 
 
 class Reply(BaseModel):
