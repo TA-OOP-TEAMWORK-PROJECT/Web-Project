@@ -9,7 +9,7 @@ from services.category_service import get_topics_for_category
 
 category_router = APIRouter(prefix='/category')
 
-@category_router.get("/", response_model=List[Category])
+@category_router.get("/") #response_model=List[Category]
 async def read_categories():
     categories = get_all_categories()
     return categories

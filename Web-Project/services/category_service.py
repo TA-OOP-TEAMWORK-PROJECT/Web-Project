@@ -3,10 +3,9 @@ from data_.models import Category, Topic
 from data_.database import read_query
 
 
-def get_all_categories() -> List[Category]:
+def get_all_categories():
     data = read_query('''SELECT id, title, description, reply_cnt, last_topic, topic_cnt, user_id
-         FROM category'''
-           )
+         FROM category''')
     a = []
     for i in data:
         a.append(Category.from_query_result(*i))
