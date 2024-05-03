@@ -38,7 +38,6 @@ def get_conversation(receiver_id: int, cur_user: User):
 
 
 def get_conversations(user: User):
-
     users = read_query(
         """
         SELECT DISTINCT users.username
@@ -48,21 +47,15 @@ def get_conversations(user: User):
         """,
         (user.id, user.id)
     )
-
     a = [Conversation(username=row[0]) for row in users]
     result = get_conv_response(a)
-
-    a = 5
     return result
 
-def get_conv_response(conv):
-    cnt = 0
-    conv_dict = {}
-    for i in conv:
-        conv_dict[
-    {
-        'username': i.username,
-    }
-    ] = cnt+1
 
-    return conv_dict
+
+
+def get_conv_response(conv):
+    result = []
+    for i in conv:
+        result.append(Conversation(username=i.username))
+    return result

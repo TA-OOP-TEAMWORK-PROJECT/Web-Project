@@ -6,7 +6,6 @@ from data_.models import *
 from data_.database import read_query, insert_query
 from mariadb import IntegrityError
 from fastapi import HTTPException, Header
-import jwt
 from typing import Optional
 
 _SEPARATOR = ';'
