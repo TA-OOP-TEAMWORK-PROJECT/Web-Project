@@ -1,5 +1,6 @@
 from data_.models import Topic
 from data_.database import insert_query, read_query, update_query
+from services import reply_service
 from services.users_service import find_by_id
 from services.category_service import get_category_by_id
 
@@ -62,8 +63,26 @@ def create(topic: Topic):
     return topic
 
 
-def update(id, topic: Topic):
-    pass
+
+def best_reply(topic_id, reply_id, user):
+
+    topic_user = read_query('''
+    SELECT user_id
+    FROM topic
+    WHERE id=?''',
+    (topic_id, ))
+
+    if topic_user[0][0] == user.id:
+
+        insert_best_reply = insert_query('''
+        UPDATE topic
+        SET best_reply = ?
+        WHERE id = ? ''',
+        (reply_id, topic_id))
+
+    reply = reply_service.get_by_id(reply_id)
+    return (f' The best reply is :'
+            f'{reply_service.create_reply_response(reply)}')
 
 
 def create_topic_response(topic):
@@ -72,8 +91,17 @@ def create_topic_response(topic):
     return {
         'title': topic.title,
         'date of publication': topic.cur_date,
-        'published by': f'{user['first_name']} {user['last_name']}',
-        'category title': f'{category['title']}'
+        'published by': f'{user}',
+        'category title': f'{category}'
     }
 
 
+
+
+
+ #взимаме отгпвпр по желание на автора на топика:
+ # data = read_query('''
+ #        SELECT id, date, content, likes_cnt, dislike_cnt, topic_id, user_id
+ #        FROM reply
+ #        WHERE id = ?''',
+ #        (input(), ))

@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Response, Header
+from typing import Annotated
+
+from fastapi import APIRouter, Response, Header, Depends
+
+from common.auth import User, get_current_active_user, get_current_user
 # from common.auth import get_user_or_raise_401
 from data_.models import Topic
-from services import topic_service
+from services import topic_service, reply_service
 
 
 topic_router = APIRouter(prefix='/topic')
@@ -10,7 +14,7 @@ topic_router = APIRouter(prefix='/topic')
 def view_all_topics(
             sort: str = None or None,
             sort_by: str | None = None,
-            search: str = None or None):
+            search: str = None or None):  # search_by: str = None or None
 
     result = topic_service.search_all_topics(search)
 
@@ -21,7 +25,7 @@ def view_all_topics(
 
 
 @topic_router.get('/{id}')
-def view_by_id(id: int):
+def view_by_id(id: int, current_user: Annotated[User, Depends(get_current_active_user)]):
 
     topic = topic_service.get_topic_by_id(id)
 
@@ -33,7 +37,7 @@ def view_by_id(id: int):
 
 
 @topic_router.post('/')
-def create_topic(topic: Topic): #, x_token: str = Header()
+def create_topic(topic: Topic, current_user: Annotated[User, Depends(get_current_active_user)]): #, x_token: str = Header()
 
     # user = get_user_or_raise_401(x_token)
 
@@ -42,23 +46,10 @@ def create_topic(topic: Topic): #, x_token: str = Header()
     return topic_service.create_topic_response(topic) # user
 
 
-    # Create Topic
-
-    # Requires authentication token
-    # Topic data must contain at least a title and a Category
+@topic_router.put('/{topic_id}/{reply_id}')  # !!!
+def view_reply(topic_id, reply_id, current_user: Annotated[User, Depends(get_current_user)]):
 
 
-
-# @topic_router.put('/{id}')
-# def update_topic(id: int, topic: Topic, x_token: str = Header()):
-#     pass
+    return topic_service.best_reply(topic_id, reply_id, current_user)
 
 
-# View Topic
-#
-# Responds with a single Topic resource and a list of Reply resources
-#
-#
-# View Category
-# Responds with a list of all Topics that belong to that Category
-# Consider adding search, sort and pagination query params

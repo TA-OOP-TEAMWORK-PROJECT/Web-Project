@@ -1,42 +1,33 @@
-from fastapi import APIRouter, Response, Header
+from typing import Annotated
+
+from fastapi import APIRouter, Response, Header, Depends
+
+from common.auth import get_current_active_user, User, get_current_user
+# from common.auth import get_user_or_raise_401
 from data_.models import Reply, Vote
 from services import reply_service
 
 reply_router = APIRouter(prefix='/reply')
 
 
-
-@reply_router.post("/")
-def create_reply(reply: Reply):
-
-    reply = reply_service.create(reply)
-
-    return reply_service.create_reply_response(reply)  # user
-
-@reply_router.put("/vote/{id}")
-def change_vote(new_vote:Vote, id:int): #user
-
-    reply = reply_service.get_by_id(id)   #  за да добавям лайкова или дислайкове
+@reply_router.post("/{topic_id}")
+def create_reply(reply: Reply,topic_id, current_user: Annotated[User, Depends(get_current_active_user)]):
 
 
-    old_vote_data = reply_service.get_vote_by_reply_id(id)  # за да проверявам как е гласувано последно
+    reply = reply_service.create(reply, topic_id)
+    if not reply:
+        return Response(status_code=404)  # HTTP exeption
+
+    return reply  # user
+
+@reply_router.put("/{id}/vote")
+def change_vote(new_vote:Vote, id:int, current_user: Annotated[User, Depends(get_current_active_user)]): #user
 
 
-    reply_service.vote_change(new_vote, old_vote_data, reply)
+    reply = reply_service.get_by_id(id)
 
-'''
-Upvote/Downvote a Reply
 
-- Requires authentication
-- A user should be able to change their downvotes to upvotes and vice versa but a reply can only be upvoted/downvoted once per user
-'''
+    return reply_service.vote_change(new_vote, reply)
 
 
 
-
-'''
-Choose Best Reply
-
-- Requires authentication
-- Topic Author can select one best reply to their Topic
-'''

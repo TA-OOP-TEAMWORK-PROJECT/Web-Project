@@ -1,9 +1,13 @@
 from string import punctuation, whitespace, digits, ascii_lowercase, ascii_uppercase
+from typing import Optional, List
+
+from common import auth
 from data_.models import *
 from data_.database import read_query, insert_query
 from mariadb import IntegrityError
-from fastapi import HTTPException, Header, Depends
-
+from fastapi import HTTPException, Header
+import jwt
+from typing import Optional
 
 _SEPARATOR = ';'
 ALGORITHM = "HS256"
@@ -14,12 +18,15 @@ def create(username: str, password: str, first_name: str, last_name: str, email:
     if existing_user:
         raise HTTPException(status_code=400, detail=f'Username {username} is taken.')
 
-    generated_id = insert_query(
-        'INSERT INTO users(username, password, first_name, last_name, email, date_of_birth) VALUES (?,?,?,?,?,?)',
-        (username, password, first_name, last_name, email, date_of_birth))
+    hash_password = auth.get_password_hash(password)
 
-    return User(id=generated_id, username=username, password='', first_name=first_name, last_name=last_name,
-                email=email, date_of_birth=date_of_birth)
+    generated_id = insert_query(
+        'INSERT INTO users(username, password, first_name, last_name, email, date_of_birth, hashed_password) VALUES (?,?,?,?,?,?,?)',
+        (username, password, first_name, last_name, email, date_of_birth, hash_password))
+
+
+    return  User(id=generated_id, username=username, password='', first_name=first_name, last_name=last_name,
+                email=email, date_of_birth=date_of_birth, hashed_password=hash_password)
 
 
 def all():  # само за админ
@@ -34,17 +41,15 @@ def try_login(username: str, password: str) -> User | None:
     return user if user and user.password == password else None
 
 
-def create_access_token(user: User) -> str:
+def create_access_token(user: User) -> dict:
     # note: this token is not particulary secure, use JWT for real-world uses
-    # username = f'{user.id}{_SEPARATOR}{user.username}'
-    #
-    # passw = [str(ord(p) + 10) for p in user.password]
-    # user.password = ''.join(passw)
-    #
-    # return {'username': username,
-    #         'password': user.password}
-    token = f"{user.id}{_SEPARATOR}{user.username}"
-    return token
+    username = f'{user.id}{_SEPARATOR}{user.username}'
+
+    passw = [str(ord(p) + 10) for p in user.password]
+    user.password = ''.join(passw)
+
+    return {'username': username,
+            'password': user.password}
 
 
 
@@ -57,27 +62,34 @@ def from_token(token: str) -> User | None:
 def find_by_username(username: str) -> User | None:
     data = read_query(
         '''SELECT id, username, password, first_name,
-        last_name, email, date_of_birth
+        last_name, email, date_of_birth, hashed_password
         FROM users WHERE username = ?''',
         (username,))
+
     return next((User.from_query_result(*row) for row in data), None)
 
+def find_by_id(id):
+    data = read_query(
+        '''SELECT username
+        FROM users WHERE id = ?''',
+        (id,))
+
+    return data[0][0]
 
 def is_authenticated(token: str) -> bool:
-    try:
-        user_id, username = token.split(_SEPARATOR)
-        return any(read_query(
-            'SELECT 1 FROM users WHERE id = ? AND username = ?',
-            (user_id, username)
-        ))
-    except ValueError:
-        return False
+    return any(read_query(
+        'SELECT 1 '
+        'FROM users '
+        'where id = ? and username = ?',
+
+        token.split(_SEPARATOR)))
 
 
-def get_token_header(token: str = Header(None)):
-    if token is None or not is_authenticated(token):
+def get_token_header(token: str = Header()):
+    if not is_authenticated(token):
         raise HTTPException(status_code=401, detail="Invalid or missing token")
-    return token
+
+    return token  #!!
 
 
 
