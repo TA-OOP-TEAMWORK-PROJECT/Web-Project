@@ -72,7 +72,7 @@ def best_reply(topic_id, reply_id, user):
     WHERE id=?''',
     (topic_id, ))
 
-    if topic_user[0] == user.id:
+    if topic_user[0][0] == user.id:
 
         insert_best_reply = insert_query('''
         UPDATE topic
@@ -83,18 +83,6 @@ def best_reply(topic_id, reply_id, user):
     reply = reply_service.get_by_id(reply_id)
     return (f' The best reply is :'
             f'{reply_service.create_reply_response(reply)}')
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def create_topic_response(topic):

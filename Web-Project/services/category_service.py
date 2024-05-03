@@ -4,9 +4,14 @@ from data_.database import read_query
 
 
 def get_all_categories() -> List[Category]:
-    sql = 'SELECT * FROM categories'
-    categories = read_query(sql)
-    return [Category.from_query_result(*category) for category in categories]
+    data = read_query('''SELECT id, title, description, reply_cnt, last_topic, topic_cnt, user_id
+         FROM category'''
+           )
+    a = []
+    for i in data:
+        a.append(Category.from_query_result(*i))
+
+    return a
 
 
 def get_topics_for_category(category_id: int, search: str = None, sort_by: str = None, page: int = 1,

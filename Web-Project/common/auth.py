@@ -27,12 +27,12 @@ def current_user(username):
             "first_name": user.first_name,
             "last_name": user.last_name,
             "email": user.email,
-            "hashed_password": user.hashed_password
-            # "disabled": False
+            "hashed_password": user.hashed_password,
+            "disabled": False
         }
     }
 
-    return users_db
+    return users_db ##
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -88,7 +88,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = get_user(current_user(payload.get("sub")), username=token_data.username) # вместо curr_user fake_db minko
     if user is None:
         raise credentials_exception
     return user

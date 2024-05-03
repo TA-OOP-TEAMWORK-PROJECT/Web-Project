@@ -1,9 +1,11 @@
 from string import punctuation, whitespace, digits, ascii_lowercase, ascii_uppercase
 from typing import Optional, List
+
+from common import auth
 from data_.models import *
 from data_.database import read_query, insert_query
 from mariadb import IntegrityError
-from fastapi import HTTPException, Header, Depends
+from fastapi import HTTPException, Header
 import jwt
 from typing import Optional
 

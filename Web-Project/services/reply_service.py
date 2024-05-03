@@ -14,16 +14,29 @@ def get_by_id(id):
 
 
 
-def create(reply):
+def create(reply, topic_id):
+
+    topic = read_query('''
+    SELECT id
+    FROM topic
+    WHERE id = ?''',
+    (topic_id, ))
+
+    if not topic:
+        return None
 
     generated_id = insert_query('''
     INSERT INTO reply(date, content, likes_cnt, dislike_cnt, topic_id)
     VALUES(?,?,?,?,?)''',
      (reply.cur_date, reply.content, reply.likes_cnt,
-      reply.dislikes_cnt, reply.topic_id))
+      reply.dislikes_cnt, topic_id[0][0]))
 
     reply.id = generated_id
-    return reply
+
+    return {
+        'content': reply.content,
+        'date of publication': reply.cur_date,
+    }
 
 
 def create_reply_response(reply):
@@ -54,7 +67,7 @@ def vote_change(new_vote:Vote, reply):
 
         update_query('''
         UPDATE reply
-        SET likes_cnt''',
+        SET likes_cnt = ?''',
                  (reply.likes_cnt, ))
 
     if new_vote.vote == 0:
