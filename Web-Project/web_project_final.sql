@@ -55,7 +55,7 @@ DROP TABLE IF EXISTS `category`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(45) NOT NULL,
+  `title` varchar(150) NOT NULL,
   `description` text DEFAULT NULL,
   `reply_cnt` int(11) DEFAULT NULL,
   `last_topic` varchar(45) DEFAULT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE `category` (
 
 LOCK TABLES `category` WRITE;
 /*!40000 ALTER TABLE `category` DISABLE KEYS */;
-INSERT INTO `category` VALUES (1,'kategoriq 1','neshto po kategoriqta',NULL,NULL,NULL,1),(2,'kategoriq 2','neshto po kategoriqta',NULL,NULL,NULL,1),(3,'kategoriq 3','neshto po kategoriqta',NULL,NULL,NULL,1);
+INSERT INTO `category` VALUES (1,'Sweet 16','attitude change',NULL,NULL,NULL,1),(2,'18+','adults only',NULL,NULL,NULL,1),(3,'Love & Robots','love in the era of ai',NULL,NULL,NULL,1);
 /*!40000 ALTER TABLE `category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,13 +91,14 @@ CREATE TABLE `message` (
   `content` longtext NOT NULL,
   `sender_id` int(11) NOT NULL,
   `receiver_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`,`sender_id`,`receiver_id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `fk_message_users1_idx` (`sender_id`),
   KEY `fk_message_users2_idx` (`receiver_id`),
   CONSTRAINT `fk_message_users1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_message_users2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +107,7 @@ CREATE TABLE `message` (
 
 LOCK TABLES `message` WRITE;
 /*!40000 ALTER TABLE `message` DISABLE KEYS */;
-INSERT INTO `message` VALUES (1,'Nezabravke asl pls?',1,5),(2,'Imash li prevoz?',2,5),(3,'Haide da hodim na vecherq?',3,5);
+INSERT INTO `message` VALUES (1,'Nezabravke asl pls?',1,5,'2024-04-25 17:30:52'),(2,'Imash li prevoz za bala?',2,8,'2024-05-07 12:00:33'),(3,'Nqmam, kakvo predlagash?',8,2,'2024-05-07 13:22:22'),(4,'Ne razbiram kakvo me pitash?',5,1,'2024-04-25 19:00:00'),(5,'Petre, edno belotche?',1,2,'2024-03-05 20:00:43'),(6,'Utre dali shte vali, aa be mincho?',3,4,'2024-05-07 15:00:00');
 /*!40000 ALTER TABLE `message` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,17 +125,11 @@ CREATE TABLE `reply` (
   `likes_cnt` int(11) DEFAULT NULL,
   `dislike_cnt` int(11) DEFAULT NULL,
   `topic_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `vote_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `fk_Reply_Topic1_idx` (`topic_id`),
-  KEY `fk_Reply_Users1_idx` (`user_id`),
-  KEY `fk_reply_vote1_idx` (`vote_id`),
-  CONSTRAINT `fk_Reply_Topic1` FOREIGN KEY (`topic_id`) REFERENCES `topic` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Reply_Users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_reply_vote1` FOREIGN KEY (`vote_id`) REFERENCES `vote` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  CONSTRAINT `fk_Reply_Topic1` FOREIGN KEY (`topic_id`) REFERENCES `topic` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -143,7 +138,7 @@ CREATE TABLE `reply` (
 
 LOCK TABLES `reply` WRITE;
 /*!40000 ALTER TABLE `reply` DISABLE KEYS */;
-INSERT INTO `reply` VALUES (1,NULL,'NO text',NULL,NULL,3,1,NULL),(2,NULL,'NO text',NULL,NULL,3,2,NULL),(3,NULL,'NO text',NULL,NULL,3,3,NULL),(4,NULL,'NO text',NULL,NULL,3,4,NULL);
+INSERT INTO `reply` VALUES (1,'2024-05-07 16:18:39','Nezabravka, what the hell dear?',NULL,NULL,3),(2,'2024-05-07 16:18:39','Petre, sina ti pak li te e vkaral v borch?',NULL,NULL,2),(3,'2024-05-07 16:18:39','Zashto, kakuv e problema? Kaji da pomognem neshu..',NULL,NULL,1);
 /*!40000 ALTER TABLE `reply` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -158,11 +153,12 @@ CREATE TABLE `topic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(150) NOT NULL,
   `date` datetime DEFAULT NULL,
-  `reply_cnt` int(11) DEFAULT NULL,
-  `view_cnt` int(11) DEFAULT NULL,
-  `last_reply` varchar(45) DEFAULT NULL,
+  `reply_cnt` int(11) DEFAULT 0,
+  `view_cnt` int(11) DEFAULT 0,
+  `last_reply` varchar(45) DEFAULT 'There are no replies, yet!',
   `users_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
+  `best_reply` int(11) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `title_UNIQUE` (`title`),
@@ -179,7 +175,7 @@ CREATE TABLE `topic` (
 
 LOCK TABLES `topic` WRITE;
 /*!40000 ALTER TABLE `topic` DISABLE KEYS */;
-INSERT INTO `topic` VALUES (1,'tema 1','2024-04-18 00:00:00',NULL,NULL,NULL,1,1),(2,'tema 2','2024-04-18 00:00:00',NULL,NULL,NULL,2,2),(3,'tema 3','2024-04-18 00:00:00',NULL,NULL,NULL,5,3);
+INSERT INTO `topic` VALUES (1,'I can\'t recognize my sister.','2023-05-22 19:00:35',0,0,'There are no replies, yet!',8,1,0),(2,'Effects of betting on youngsters.','2024-02-13 15:45:33',0,0,'There are no replies, yet!',2,2,0),(3,'Fake girlfriend or real AI partner?','2024-05-07 10:00:24',0,0,'There are no replies, yet!',5,3,0);
 /*!40000 ALTER TABLE `topic` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -193,17 +189,17 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(45) NOT NULL,
-  `password` varchar(50) NOT NULL,
   `first_name` varchar(45) NOT NULL,
   `last_name` varchar(45) NOT NULL,
   `email` varchar(150) NOT NULL,
   `date_of_birth` date NOT NULL,
   `admn_id` int(11) DEFAULT NULL,
   `token_id` int(11) DEFAULT NULL,
+  `hashed_password` varchar(5000) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -212,7 +208,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'gosho123','qwerty','Georgi','Georgiev','georgi@teenproblem.bg','1970-01-01',NULL,NULL),(2,'pesho5','qwerty','Pesho','Peshev','pesho@teenproblem.bg','1980-02-02',NULL,NULL),(3,'unufri34','qwerty','Unufri','Dalgopolov','unufri@teenproblem.bg','1990-03-03',NULL,NULL),(4,'minko69','qwerty','Minko','Praznikov','minko@teenproblem.bg','2000-04-04',NULL,NULL),(5,'nezabravka007','qwerty','Nezabravka','Ivanov','nezabravka@teenproblem.bg','2010-05-05',NULL,NULL);
+INSERT INTO `users` VALUES (1,'gosho123','Georgi','Georgiev','georgi@teenproblem.bg','1970-01-01',NULL,NULL,'$2b$12$hi6cp3C.gQVpMHsQnRe.6.Dk0A/LQzKC5IhGx36mL5cLK70trhJ0m'),(2,'pesho5','Pesho','Peshev','pesho@teenproblem.bg','1980-02-02',NULL,NULL,'$2b$12$5yT7mZ7R8fOAjENeY156geWWarfNKHl29plO.I8AMZK4pjyfRMSFS'),(3,'unufri34','Unufri','Dalgopolov','unufri@teenproblem.bg','1990-03-03',NULL,NULL,'$2b$12$033En07rOs1EbE2tvsp2He2ba9x7wfQenhcnsLLAkKDKdArMGf3nm'),(4,'minko69','Minko','Praznikov','minko@teenproblem.bg','2000-04-04',NULL,NULL,'$2b$12$C0/sFymjUscwnrCLs3CGxubxXLRg5PisdN40T0iPG0lF25EViMBdG'),(5,'nezabravka007','Nezabravka','Ivanov','nezabravka@teenproblem.bg','2010-05-05',NULL,NULL,'$2b$12$g0Xm2o4EfzPdy1L79i57NelT2YCsJ4t/ljXxy93OOFcNjIDv0PUke'),(6,'evtim123','Evtim','Evtimov','evtim@teenproblem.bg','1990-05-06',NULL,NULL,'$2b$12$MJXtvP9SYDv/ktilpGl1Oey0a52mOLWN1qYp8mxhzoxSUvi6ETz3y'),(7,'batgiorgi','Joromir','Popatanasov','joreto@teenproblem.bg','1992-08-10',NULL,NULL,'$2b$12$lce9fLtzEkY5seTHrZoxB.e3U0bi6bjB8ZyYm1LCWDSXzdrR1J3tG'),(8,'lachena95','Luchezara','Parichkova','lucheto@teenproblem.bg','1995-11-01',NULL,NULL,'$2b$12$4LyaWM5/XNzlh40hMdw9BOtPLwJ.gi6.NdWzVsqYRJy4qLqj4cBQi');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -224,10 +220,14 @@ DROP TABLE IF EXISTS `vote`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vote` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `upvote` int(11) NOT NULL,
-  `downvote` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  `reply_id` int(11) NOT NULL,
+  `users_id` int(11) NOT NULL,
+  `vote` tinyint(4) DEFAULT NULL,
+  PRIMARY KEY (`reply_id`,`users_id`),
+  KEY `fk_reply_has_users_users1_idx` (`users_id`),
+  KEY `fk_reply_has_users_reply1_idx` (`reply_id`),
+  CONSTRAINT `fk_reply_has_users_reply1` FOREIGN KEY (`reply_id`) REFERENCES `reply` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_reply_has_users_users1` FOREIGN KEY (`users_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -249,4 +249,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-18 15:54:05
+-- Dump completed on 2024-05-07 16:32:42
