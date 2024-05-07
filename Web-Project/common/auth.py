@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from data_.models import User, TokenData, UserInDB
@@ -13,7 +13,6 @@ SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 
-#read_query/create response
 
 def current_user(username):
 
@@ -23,7 +22,7 @@ def current_user(username):
         user.username: {
             "id": user.id,
             "username": user.username,
-            "password": user.password,
+            "password": None,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "email": user.email,
@@ -54,8 +53,8 @@ def get_user(db, username: str):
         return UserInDB(**user_dict)
 
 
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+def authenticate_user(cur_user, username: str, password: str):
+    user = get_user(cur_user, username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -152,9 +151,3 @@ async def get_current_active_user(
 #
 # class UserInDB(User):
 #     hashed_password: str
-
-
-
-
-
-

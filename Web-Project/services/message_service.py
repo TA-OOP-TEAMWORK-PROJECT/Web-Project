@@ -1,8 +1,6 @@
 from data_.models import Message, MessageCreate, User, Conversation
 from fastapi import Response
 from data_.database import insert_query, read_query
-from services.users_service import is_authenticated
-from common.responses import MessageServiceError
 from datetime import datetime
 
 
@@ -38,24 +36,50 @@ def get_conversation(receiver_id: int, cur_user: User):
 
 
 def get_conversations(user: User):
-    users = read_query(
+    sender_user = read_query(
         """
         SELECT DISTINCT users.username
         FROM users
-        JOIN message ON users.id = message.sender_id OR users.id = message.receiver_id
-        WHERE message.sender_id = %s OR message.receiver_id = %s
+        JOIN message ON users.id = message.receiver_id 
+        WHERE message.sender_id = ?
         """,
-        (user.id, user.id)
+        (user.id, )
     )
-    a = [Conversation(username=row[0]) for row in users]
-    result = get_conv_response(a)
+
+    receiver_user = read_query(
+        """
+        SELECT DISTINCT users.username
+        FROM users
+        JOIN message ON users.id = message.sender_id 
+        WHERE message.receiver_id = ? """,
+        (user.id, )
+    )
+
+
+    sender = get_conv_response([Conversation(username=row[0]) for row in sender_user])
+    receiver = get_conv_response([Conversation(username=row[0]) for row in receiver_user])
+    a = 5
+    result = {
+        f"Inbox: {receiver}",
+        f"Outbox:{sender}"
+    }
     return result
-
-
 
 
 def get_conv_response(conv):
     result = []
     for i in conv:
         result.append(Conversation(username=i.username))
-    return result
+
+    result_response = []
+    for r in result:
+        result_response.append(r.username)
+
+    return result_response
+
+
+
+# SELECT DISTINCT users.username
+#         FROM users
+#         JOIN message ON users.id = message.sender_id OR users.id = message.receiver_id
+#         WHERE message.sender_id = 1 OR message.receiver_id = 1

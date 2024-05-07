@@ -26,7 +26,7 @@ def create(reply, topic_id):
         return None
 
     generated_id = insert_query('''
-    INSERT INTO reply(date, content, likes_cnt, dislike_cnt, topic_id)
+    INSERT INTO reply(date, content, topic_id)
     VALUES(?,?,?,?,?)''',
      (reply.cur_date, reply.content, reply.likes_cnt,
       reply.dislikes_cnt, topic_id[0][0]))
@@ -35,12 +35,12 @@ def create(reply, topic_id):
 
     return {
         'content': reply.content,
-        'date of publication': reply.cur_date,
+        'date of publication': reply.cur_date.strftime('%d/%m/%Y'),
     }
 
 
 def create_reply_response(reply):
-    topic = topic_service.get_topic_by_id(reply.topic_id) # трябва да има user
+    topic = topic_service.get_topic_by_id(reply.topic_id,cur_user=None) # трябва да има user
 
     return {
         'content': reply.content,
@@ -57,7 +57,10 @@ def create_vote(new_vote:Vote):
     new_vote.id = generated_id
     return new_vote
 
-def vote_change(new_vote:Vote, reply):
+def vote_change(new_vote:Vote, reply, cur_user):
+
+    new_vote.reply_id = reply.id
+    new_vote.sender_id = cur_user.id
 
     if new_vote.vote == 1:
 
@@ -79,8 +82,8 @@ def vote_change(new_vote:Vote, reply):
         SET dislike_cnt = ?''',
                  (reply.dislikes_cnt, ))
 
-
-    return 'Vote has been changed'
+    vote_result = 'like' if new_vote.vote == 1 else 'hate'
+    return f'You {vote_result} this reply!'
 
 
 def get_vote_by_reply_id(id):

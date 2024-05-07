@@ -4,14 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 from data_.models import LoginData, Token, User
 from common.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user,
-                         current_user, create_access_token, get_current_active_user)
+                          create_access_token, get_current_active_user)
 
 from common.auth import current_user
 
 auth_router = APIRouter(prefix='/auth')
 
 
-@auth_router.post("/token")
+@auth_router.post("/login")
 async def login_for_access_token(form_data: LoginData) -> Token:
 
     user_credentials = current_user(form_data.username)
@@ -30,14 +30,20 @@ async def login_for_access_token(form_data: LoginData) -> Token:
     return Token(access_token=access_token, token_type="bearer")
 
 
-@auth_router.get("/users/me/", response_model=User)
+@auth_router.get("/users/me")
 async def read_users_me(current_user: Annotated[User, Depends(get_current_active_user)]):
 
-    return current_user
+    return get_user_response(current_user)
 
 
 
+def get_user_response(user):
 
+    return {
+        'Username': user.username,
+        'Name': f'{user.first_name} {user.last_name}',
+        'Email': user.email,
+    }
 
 
 

@@ -1,17 +1,9 @@
-from fastapi import APIRouter, Query, Response, Header
-from fastapi.responses import JSONResponse
-from services.users_service import *
+from fastapi import APIRouter
 from services import users_service
-from data_.models import *
 from common.auth import *
-# from common.responses import *
-from fastapi import HTTPException
 
-users_router = APIRouter(prefix='/users')
 
-# @users_router.get('/info')   #admin
-# def users_info(x_token: str = Header()):
-#     return get_user_or_raise_401(x_token)
+users_router = APIRouter(prefix='/user')
 
 
 @users_router.post('/register')
@@ -28,6 +20,37 @@ def register(user_data: User):
         return {'message': f'User with username {user.username} has been created!'}
     else:
         return {'message': 'Failed to create user.'}, 500
+
+
+
+
+
+
+
+
+
+
+
+# @users_router.get('/info')   #admin
+# def users_info(x_token: str = Header()):
+#     return get_user_or_raise_401(x_token)
+
+
+# @users_router.post('/register')
+# def register(user_data: User):
+#     user = users_service.create(
+#         user_data.username,
+#         user_data.password,
+#         user_data.first_name,
+#         user_data.last_name,
+#         user_data.email,
+#         user_data.date_of_birth,
+#     )
+#     if user is not None:
+#         return {'message': f'User with username {user.username} has been created!'}
+#     else:
+#         return {'message': 'Failed to create user.'}, 500
+
 
 # @users_router.post('/login')
 # def login(login_data: LoginData):
