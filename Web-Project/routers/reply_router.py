@@ -12,7 +12,7 @@ reply_router = APIRouter(prefix='/reply')
 
 
 @reply_router.post("/{topic_id}")
-def create_reply(reply: Reply,topic_id,
+def create_reply(reply: Reply, topic_id,
                  current_user: Annotated[User, Depends(get_current_active_user)]):
 
     reply = reply_service.create(reply, topic_id)

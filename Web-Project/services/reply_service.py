@@ -54,7 +54,7 @@ def create_vote(new_vote:Vote):
         INSERT INTO vote(reply_id, sender_id, vote)
         VALUES(?,?,?)''',
         (new_vote.reply_id, new_vote.sender_id, new_vote.vote))
-
+    new_vote.id = generated_id
     return new_vote
 
 def vote_change(new_vote:Vote, reply, cur_user):
@@ -62,74 +62,36 @@ def vote_change(new_vote:Vote, reply, cur_user):
     new_vote.reply_id = reply.id
     new_vote.sender_id = cur_user.id
 
-    old_vote = get_last_user_vote(reply.id, cur_user.id)
+    if new_vote.vote == 1:
 
-    vote_result = ''
-    if old_vote is None:
-
-        create_vote(new_vote)
-
-        if new_vote.vote == 1:
-            reply.likes_cnt += 1
-        else:
-            reply.dislikes_cnt += 1
-
-        result = 'like' if new_vote.vote == 1 else 'hate'
-        vote_result = f'You {result} this reply!'
-
-    elif new_vote.vote == old_vote.vote:
-
-        update_query('''
-                DELETE vote
-                FROM vote
-                WHERE reply_id=? and sender_id = ?''',
-                (reply.id, cur_user.id))
-
-        if new_vote.vote == 1:
-            reply.likes_cnt -= 1
-        else:
+        if not reply.dislikes_cnt == 0:
             reply.dislikes_cnt -= 1
-        vote_result = 'You have deleted your vote!'
-
-    elif new_vote.vote != old_vote.vote:
-
-        if new_vote.vote == 1:
-            if not reply.dislikes_cnt == 0:
-                reply.dislikes_cnt -= 1
-            reply.likes_cnt += 1
-
-        elif new_vote.vote == 0:
-            if not reply.likes_cnt == 0:
-                reply.likes_cnt -= 1
-            reply.dislikes_cnt += 1
+        reply.likes_cnt += 1
 
         update_query('''
-           UPDATE vote
-           SET vote = ?
-           WHERE reply_id = ? and  sender_id = ?''',
-                     (new_vote.vote, reply.id, cur_user.id))
+        UPDATE reply
+        SET likes_cnt = ?''',
+                 (reply.likes_cnt, ))
 
-        result = 'like' if new_vote.vote == 1 else 'hate'
-        vote_result = f'You {result} this reply!'
+    if new_vote.vote == 0:
+        if not reply.likes_cnt == 0:
+            reply.likes_cnt -= 1
+        reply.dislikes_cnt += 1
+        update_query('''
+        UPDATE reply
+        SET dislike_cnt = ?''',
+                 (reply.dislikes_cnt, ))
 
-    update_query('''
-            UPDATE reply
-            SET likes_cnt = ?, dislike_cnt = ?
-            WHERE id = ?''',
-            (reply.likes_cnt, reply.dislikes_cnt, reply.id))
-
-    return vote_result
+    vote_result = 'like' if new_vote.vote == 1 else 'hate'
+    return f'You {vote_result} this reply!'
 
 
-def get_last_user_vote(reply_id, user_id):
+def get_vote_by_reply_id(id):
     data = read_query('''
-    SELECT vote
+    SELECT reply_id, sender_id, vote
     FROM vote
-    WHERE reply_id=? and sender_id = ?''',
-    (reply_id, user_id))
+    WHERE reply_id=?''',
+               (id, ))
 
-    if len(data) == 0:
-        return None
 
-    return Vote(reply_id=reply_id, sender_id=user_id, vote=data[0][0])
-
+    return data[0]

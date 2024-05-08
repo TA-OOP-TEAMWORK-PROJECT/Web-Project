@@ -22,7 +22,7 @@ class User(BaseModel):
     last_name: str = Field(max_length=45)
     email: EmailStr
     date_of_birth: date | None = None
-    admin_id: int | None = None
+    role: str = Field(default="user", description="User role, e.g., 'admin', 'user'")
     hashed_password: str | None = None
     disabled: bool | None = None
     # roles: List[Role] = ['user']
@@ -60,11 +60,11 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
-class Admin(BaseModel):
-
-    id: int | None = None
-    users_id: int
-    category_id: int
+# class Admin(BaseModel):
+#
+#     id: int | None = None
+#     users_id: int
+#     category_id: int
 
 
 class Message(BaseModel):
@@ -119,12 +119,13 @@ class Topic(BaseModel):
 
 class Category(BaseModel):
     id: int | None = None
-    title: str=  Field(min_length=1, max_length=150)
+    title: str = Field(min_length=1, max_length=150)
     description: str = Field(min_length=1)
     reply_cnt: int | None
     last_topic: str | None
     topic_cnt: int | None
     user_id: int
+    is_private: bool = Field(default=False, description="The category is visible for everyone")
 
 
     @classmethod
@@ -143,6 +144,13 @@ class Category(BaseModel):
                     topic_cnt=0 if topic_cnt == None else topic_cnt,
                     user_id=user_id or None
                 )
+
+
+class CategoryAccess(BaseModel):
+    category_id: int
+    user_id: int
+    can_read: bool = Field(default=True, description="The user can read the category")
+    can_write: bool = Field(default=False, description="The user can add or edit posts in the category")
 
 
 class Reply(BaseModel):
