@@ -14,7 +14,7 @@ def get_by_id(id):
 
 
 
-def create(reply, topic_id):
+def create(reply, topic_id): #
 
     topic = read_query('''
     SELECT id
