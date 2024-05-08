@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from fastapi import Query
 from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
@@ -8,7 +8,9 @@ from datetime import date, datetime
 class Role:
 
     ADMIN = 'admin'
+    MODERATOR = 'moderator'
     USER = 'user'
+    GUEST = 'guest'
 
 
 class User(BaseModel):
@@ -23,6 +25,7 @@ class User(BaseModel):
     admin_id: int | None = None
     hashed_password: str | None = None
     disabled: bool | None = None
+    # roles: List[Role] = ['user']
 
     @classmethod
     def from_query_result(cls, id: int, username: str, first_name: str, last_name: str, email: str,
@@ -147,9 +150,9 @@ class Reply(BaseModel):
     id: int = None or None
     cur_date: datetime = datetime.now()
     content: str = Field(min_length=1)
-    likes_cnt: int = None or None
-    dislikes_cnt: int = None or None ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
-    topic_id: int = None or None
+    likes_cnt: int|None = None
+    dislikes_cnt: int|None= None ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
+    topic_id: int|None = None
 
 
     @classmethod
