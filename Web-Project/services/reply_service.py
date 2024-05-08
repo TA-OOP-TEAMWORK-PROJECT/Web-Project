@@ -26,7 +26,7 @@ def create(reply, topic_id):
         return None
 
     generated_id = insert_query('''
-    INSERT INTO reply(date, content, topic_id)
+    INSERT INTO reply(date, content, likes_cnt, dislikes_cnt, topic_id)
     VALUES(?,?,?,?,?)''',
      (reply.cur_date, reply.content, reply.likes_cnt,
       reply.dislikes_cnt, topic_id[0][0]))
