@@ -28,7 +28,6 @@ CREATE TABLE `category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(150) NOT NULL,
   `description` text DEFAULT NULL,
-  `reply_cnt` int(11) DEFAULT NULL,
   `last_topic` varchar(45) DEFAULT NULL,
   `topic_cnt` int(11) DEFAULT NULL,
   `is_private` tinyint(4) NOT NULL DEFAULT 0,
@@ -44,7 +43,7 @@ CREATE TABLE `category` (
 
 LOCK TABLES `category` WRITE;
 /*!40000 ALTER TABLE `category` DISABLE KEYS */;
-INSERT INTO `category` VALUES (1,'Sweet 16','attitude change',NULL,NULL,NULL,0),(2,'18+','adults only',NULL,NULL,NULL,0),(3,'Love & Robots','love in the era of ai',NULL,NULL,NULL,0);
+INSERT INTO `category` VALUES (1,'Sweet 16','attitude change',NULL,NULL,0),(2,'18+','adults only',NULL,NULL,0),(3,'Love & Robots','love in the era of ai',NULL,NULL,0);
 /*!40000 ALTER TABLE `category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -120,8 +119,8 @@ CREATE TABLE `reply` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` datetime DEFAULT NULL,
   `content` text DEFAULT 'NO text',
-  `likes_cnt` int(11) DEFAULT NULL,
-  `dislike_cnt` int(11) DEFAULT NULL,
+  `likes_cnt` int(11) DEFAULT 0,
+  `dislike_cnt` int(11) DEFAULT 0,
   `topic_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
@@ -151,8 +150,6 @@ CREATE TABLE `topic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(150) NOT NULL,
   `date` datetime DEFAULT NULL,
-  `reply_cnt` int(11) DEFAULT 0,
-  `view_cnt` int(11) DEFAULT 0,
   `last_reply` varchar(45) DEFAULT 'There are no replies, yet!',
   `users_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
@@ -173,7 +170,7 @@ CREATE TABLE `topic` (
 
 LOCK TABLES `topic` WRITE;
 /*!40000 ALTER TABLE `topic` DISABLE KEYS */;
-INSERT INTO `topic` VALUES (1,'I can\'t recognize my sister.','2023-05-22 19:00:35',0,0,'There are no replies, yet!',8,1,0),(2,'Effects of betting on youngsters.','2024-02-13 15:45:33',0,0,'There are no replies, yet!',2,2,0),(3,'Fake girlfriend or real AI partner?','2024-05-07 10:00:24',0,0,'There are no replies, yet!',5,3,0);
+INSERT INTO `topic` VALUES (1,'I can\'t recognize my sister.','2023-05-22 19:00:35','There are no replies, yet!',8,1,0),(2,'Effects of betting on youngsters.','2024-02-13 15:45:33','There are no replies, yet!',2,2,0),(3,'Fake girlfriend or real AI partner?','2024-05-07 10:00:24','There are no replies, yet!',5,3,0);
 /*!40000 ALTER TABLE `topic` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -246,4 +243,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-08 14:39:04
+-- Dump completed on 2024-05-08 15:50:54
