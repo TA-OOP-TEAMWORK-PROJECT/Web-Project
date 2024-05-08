@@ -97,21 +97,17 @@ class Topic(BaseModel):
     id: int | None = None
     title: str = Field(min_length=1, max_length=150)
     cur_date: datetime = datetime.now()
-    reply_cnt: int|None = 0
-    view_cnt: int|None = 0
     last_reply: str | None = None
     user_id: int| None = None
     category_id: int| None = None
     best_reply: int | None = None
     @classmethod
-    def from_query_result(cls, id, title, cur_date, reply_cnt,
-                          view_cnt, last_reply, user_id, category_id):
+    def from_query_result(cls, id, title, cur_date,
+                          last_reply, user_id, category_id):
         return cls(
             id=id,
             title=title,
             cur_date=cur_date,
-            reply_cnt= 0 if reply_cnt==None else reply_cnt,
-            view_cnt=0 if view_cnt==None else view_cnt,
             last_reply= 'There are no replies on that topic yet!' if last_reply is None else last_reply,
             user_id=user_id,
             category_id=category_id)
@@ -121,7 +117,6 @@ class Category(BaseModel):
     id: int | None = None
     title: str = Field(min_length=1, max_length=150)
     description: str = Field(min_length=1)
-    reply_cnt: int | None
     last_topic: str | None
     topic_cnt: int | None
     user_id: int
@@ -129,7 +124,7 @@ class Category(BaseModel):
 
 
     @classmethod
-    def from_query_result(cls, id, title, description, reply_cnt,
+    def from_query_result(cls, id, title, description,
                           last_topic, topic_cnt, user_id
     ):
 
@@ -138,7 +133,6 @@ class Category(BaseModel):
                     id=id,
                     title=title,
                     description=description,
-                    reply_cnt=0 if reply_cnt == None else reply_cnt,
                     last_topic='There are no topics on this category yet'
                                 if last_topic == None else last_topic,
                     topic_cnt=0 if topic_cnt == None else topic_cnt,
@@ -159,8 +153,8 @@ class Reply(BaseModel):
     cur_date: datetime = datetime.now()
     content: str = Field(min_length=1)
     likes_cnt: int|None = None
-    dislikes_cnt: int|None= None ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
-    topic_id: int|None = None
+    dislikes_cnt: int|None= 0 ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
+    topic_id: int|None = 0
 
 
     @classmethod

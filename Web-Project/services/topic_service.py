@@ -8,13 +8,13 @@ from services.category_service import get_category_by_id
 def search_all_topics(search: str = None or None):
     if search is None:
         data = read_query(
-            '''SELECT id, title, date, reply_cnt, view_cnt, last_reply, user_id, category_id
+            '''SELECT id, title, date, last_reply, user_id, category_id
                FROM topic''')
 
         #за да излезе резултат отивам в get_user_by_id/ get_categoy_by_id
     else:
         data = read_query(
-            '''SELECT id, title, date, reply_cnt, view_cnt, last_reply, user_id, category_id
+            '''SELECT id, title, date, last_reply, user_id, category_id
                FROM topic 
                WHERE title LIKE ?''', (f'%{search}%',)) # ако искаме да се търси и по дата например, може да се добави още един ?
 
@@ -35,7 +35,7 @@ def sort_all_topics(topics: list[Topic], sort_by, is_reverse ):
 
 def get_topic_by_id(id, cur_user):
     data = read_query(
-        '''SELECT id, title, date, reply_cnt, view_cnt, last_reply, user_id, category_id
+        '''SELECT id, title, date, last_reply, users_id, category_id
                FROM topic
                WHERE id = ?''',
             (id,))
@@ -116,10 +116,7 @@ def get_all_topic_response(topics):
 
             'Topic title': data.title,
             'Date': data.cur_date.strftime('%d/%m/%Y'),
-            'All Replies': data.reply_cnt,
-            "All views": data.view_cnt,
             "Last reply is:": data.last_reply
-
         }
 
     return topics_dict

@@ -27,11 +27,16 @@ def create(reply, topic_id):
 
     generated_id = insert_query('''
     INSERT INTO reply(date, content, topic_id)
-    VALUES(?,?,?,?,?)''',
-     (reply.cur_date, reply.content, reply.likes_cnt,
-      reply.dislikes_cnt, topic_id[0][0]))
+    VALUES(?,?,?)''',
+     (reply.cur_date, reply.content, topic_id[0][0]))
 
     reply.id = generated_id
+
+    update_query('''
+    UPDATE topic 
+    SET last_reply = ?
+    WHERE id = ?''',
+    (reply.content, int(topic_id)))
 
     return {
         'content': reply.content,

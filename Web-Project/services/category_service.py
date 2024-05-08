@@ -3,7 +3,7 @@ from data_.database import read_query
 
 
 def get_all_categories():
-    data = read_query('''SELECT id, title, description, reply_cnt, last_topic, topic_cnt, user_id
+    data = read_query('''SELECT id, title, description, last_topic, topic_cnt, user_id
          FROM category''')
 
     result = (Category.from_query_result(*row) for row in data)
@@ -21,8 +21,7 @@ def get_category_response(category):
             "Category title": cat.title,
             "Description": cat.description,
             "Number of topics in category": cat.topic_cnt,
-            "Last topic is:": cat.last_topic,
-            "Total replies in the category": cat.reply_cnt
+            "Last topic is:": cat.last_topic
                                         }
 
     return cat_dict
@@ -31,7 +30,7 @@ def get_category_response(category):
 
 def get_topics_for_category(category_id: int, search: str = None, sort_by: str = None,
                             page: int = 1, limit: int = 10):
-    sql = 'SELECT id, title, date, reply_cnt, view_cnt, last_reply, user_id, category_id FROM topic WHERE category_id = %s'
+    sql = 'SELECT id, title, date, last_reply, user_id, category_id FROM topic WHERE category_id = %s'
     sql_params = (category_id,)
 
     if search:
@@ -53,8 +52,6 @@ def get_topics_for_category(category_id: int, search: str = None, sort_by: str =
 
             'Topic title': topic.title,
             'Date': topic.cur_date.strftime('%d/%m/%Y'),
-            'All Replies': topic.reply_cnt,
-            "All views": topic.view_cnt,
             "Last reply is:": topic.last_reply
         }
 
