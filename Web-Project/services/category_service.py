@@ -78,7 +78,7 @@ def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, p
     return topics_dict
 
 
-def user_access_state(visibility, category_id, user): # SET is_private where category_id == category_id
+def user_access_state(visibility, category_id, user):
 
     if not user.role == Role.ADMIN:
         return Response(status_code=401, content='You are not authorized!')
