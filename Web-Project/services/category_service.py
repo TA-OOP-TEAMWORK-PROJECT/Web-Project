@@ -184,7 +184,14 @@ def revoke_category_read_or_write_access(user_id: int, category_id: int, revoke_
         new_can_read = can_read and not revoke_read
         new_can_write = can_write and not revoke_write
 
-        if can_read != new_can_read or can_write != new_can_write:
+        if not new_can_read and not new_can_write:
+            update_query(
+                "DELETE FROM category_access WHERE user_id = ? AND category_id = ?",
+                (user_id, category_id)
+            )
+            return {"message": "User removed completely from the category."}
+
+        elif can_read != new_can_read or can_write != new_can_write:
             update_query(
                 "UPDATE category_access SET can_read = ?, can_write = ? WHERE user_id = ? AND category_id = ?",
                 (new_can_read, new_can_write, user_id, category_id)
