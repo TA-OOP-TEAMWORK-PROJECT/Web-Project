@@ -50,7 +50,7 @@ def get_topics_for_category(user_id: int, category_id: int, search: str = None, 
 
 def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, page: int, limit: int):
 
-    sql = 'SELECT id, title, date, last_reply, users_id, category_id FROM topic WHERE category_id = %s'
+    sql = 'SELECT id, title, date, last_reply, user_id, category_id FROM topic WHERE category_id = %s'
     sql_params = (category_id,)
 
     if search:
@@ -105,7 +105,7 @@ def get_category_by_id(id):
 
 def get_user_access_state(user: User):
     data = read_query('''
-    SELECT users_id, category_id, can_read, can_write
+    SELECT user_id, category_id, can_read, can_write
     FROM category_access
     WHERE users_id = ?''',
     (user.id, ))

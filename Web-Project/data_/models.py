@@ -138,7 +138,7 @@ class CategoryAccess(BaseModel):
     category_id: int
     user_id: int
     can_read: bool = Field(default=True, description="The user can read the category")
-    can_write: bool = Field(default=False, description="The user can add or edit posts in the category")
+    can_write: bool = Field(default=True, description="The user can add or edit posts in the category")
 
 
     @classmethod
