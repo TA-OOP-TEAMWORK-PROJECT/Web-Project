@@ -22,10 +22,10 @@ class User(BaseModel):
     last_name: str = Field(max_length=45)
     email: EmailStr
     date_of_birth: date | None = None
-    role: str = Field(default="user", description="User role, e.g., 'admin', 'user'")
+    role: str = Field(default=Role.USER, description="User role, e.g., 'admin', 'user'")
     hashed_password: str | None = None
     disabled: bool | None = None
-    # roles: List[Role] = ['user']
+
 
     @classmethod
     def from_query_result(cls, id: int, username: str, first_name: str, last_name: str, email: str,
@@ -119,13 +119,12 @@ class Category(BaseModel):
     description: str = Field(min_length=1)
     last_topic: str | None
     topic_cnt: int | None
-    user_id: int
     is_private: bool = Field(default=False, description="The category is visible for everyone")
 
 
     @classmethod
     def from_query_result(cls, id, title, description,
-                          last_topic, topic_cnt, user_id
+                          last_topic, topic_cnt
     ):
 
 
@@ -135,8 +134,7 @@ class Category(BaseModel):
                     description=description,
                     last_topic='There are no topics on this category yet'
                                 if last_topic == None else last_topic,
-                    topic_cnt=0 if topic_cnt == None else topic_cnt,
-                    user_id=user_id or None
+                    topic_cnt=0 if topic_cnt == None else topic_cnt
                 )
 
 

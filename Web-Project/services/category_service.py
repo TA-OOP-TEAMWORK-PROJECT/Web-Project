@@ -1,9 +1,12 @@
-from data_.models import Category, Topic
-from data_.database import read_query
+from fastapi import HTTPException
+
+from data_.models import Category, Topic, CategoryAccess
+from data_.database import read_query, update_query, insert_query
+from services.users_service import find_by_id
 
 
 def get_all_categories():
-    data = read_query('''SELECT id, title, description, last_topic, topic_cnt, user_id
+    data = read_query('''SELECT id, title, description, last_topic, topic_cnt
          FROM category''')
 
     result = (Category.from_query_result(*row) for row in data)
@@ -28,9 +31,30 @@ def get_category_response(category):
 
 
 
-def get_topics_for_category(category_id: int, search: str = None, sort_by: str = None,
+def get_topics_for_category(user_id:int, category_id: int, search: str = None, sort_by: str = None,
                             page: int = 1, limit: int = 10):
-    sql = 'SELECT id, title, date, last_reply, user_id, category_id FROM topic WHERE category_id = %s'
+    category = read_query(
+        "SELECT is_private FROM category WHERE id = ?",
+        (category_id,)
+    )
+
+    if category:
+        is_private = category[0][0]
+
+        if not is_private:
+            return fetch_all_topics_for_category(category_id, search, sort_by, page, limit)
+        else:
+            if check_category_read_access(user_id, category_id):
+                return fetch_all_topics_for_category(category_id, search, sort_by, page, limit)
+            else:
+                raise HTTPException(status_code=403, detail="Access denied")
+
+    raise HTTPException(status_code=404, detail="Category not found")
+
+
+def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, page: int, limit: int):
+
+    sql = 'SELECT id, title, date, last_reply, users_id, category_id FROM topic WHERE category_id = %s'
     sql_params = (category_id,)
 
     if search:
@@ -57,7 +81,6 @@ def get_topics_for_category(category_id: int, search: str = None, sort_by: str =
 
     return topics_dict
 
-
 def get_category_by_id(id):
     data = read_query(
         '''SELECT title
@@ -65,3 +88,29 @@ def get_category_by_id(id):
         (id,))
 
     return data[0][0]
+
+
+def grant_category_read_access(user_id: int, category_id: int):
+    existing_access = read_query(
+        "SELECT 1 FROM category_access WHERE user_id = ? AND category_id = ?",
+        (user_id, category_id)
+    )
+    if existing_access:
+        update_query(
+            "UPDATE category_access SET can_read = TRUE WHERE user_id = ? AND category_id = ?",
+            (user_id, category_id)
+        )
+    else:
+        insert_query(
+            "INSERT INTO category_access (user_id, category_id, can_read, can_write) VALUES (?, ?, TRUE, FALSE)",
+            (user_id, category_id)
+        )
+    return {"message": "Read access granted to the user."}
+
+
+def check_category_read_access(user_id: int, category_id: int):
+    access = read_query(
+        "SELECT can_read FROM category_access WHERE user_id = ? AND category_id = ?",
+        (user_id, category_id)
+    )
+    return access and access[0][0]
