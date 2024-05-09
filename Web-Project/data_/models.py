@@ -3,14 +3,14 @@ from fastapi import Query
 from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
 
+from data_.database import read_query
 
 
 class Role:
 
     ADMIN = 'admin'
-    MODERATOR = 'moderator'
     USER = 'user'
-    GUEST = 'guest'
+
 
 
 class User(BaseModel):
@@ -22,21 +22,22 @@ class User(BaseModel):
     last_name: str = Field(max_length=45)
     email: EmailStr
     date_of_birth: date | None = None
-    role: str = Field(default="user", description="User role, e.g., 'admin', 'user'")
+    role: str = Field(default="user" , description="User role, e.g., 'admin', 'user'")
     hashed_password: str | None = None
     disabled: bool | None = None
-    # roles: List[Role] = ['user']
+
 
     @classmethod
     def from_query_result(cls, id: int, username: str, first_name: str, last_name: str, email: str,
-                          date_of_birth: date, hashed_password):
+                          date_of_birth: date, hashed_password,role):
         return cls(id=id,
                    username=username,
                    first_name=first_name,
                    last_name=last_name,
                    email=email,
                    date_of_birth=date_of_birth,
-                   hashed_password=hashed_password)
+                   hashed_password=hashed_password,
+                   role=role)
 
     def is_admin(self):
         return self.role == Role.ADMIN
@@ -58,13 +59,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
-
-
-# class Admin(BaseModel):
-#
-#     id: int | None = None
-#     users_id: int
-#     category_id: int
 
 
 class Message(BaseModel):
@@ -101,6 +95,7 @@ class Topic(BaseModel):
     user_id: int| None = None
     category_id: int| None = None
     best_reply: int | None = None
+
     @classmethod
     def from_query_result(cls, id, title, cur_date,
                           last_reply, user_id, category_id):
@@ -116,10 +111,10 @@ class Topic(BaseModel):
 class Category(BaseModel):
     id: int | None = None
     title: str = Field(min_length=1, max_length=150)
-    description: str = Field(min_length=1)
-    last_topic: str | None
-    topic_cnt: int | None
-    user_id: int
+    description: str|None = None
+    last_topic: str | None = None
+    topic_cnt: int | None = None
+    user_id: int = None
     is_private: bool = Field(default=False, description="The category is visible for everyone")
 
 
@@ -130,9 +125,10 @@ class Category(BaseModel):
 
 
         return cls(
-                    id=id,
+                    id= id,
                     title=title,
-                    description=description,
+                    description= 'The title speaks for itself'
+                    if description == None else description,
                     last_topic='There are no topics on this category yet'
                                 if last_topic == None else last_topic,
                     topic_cnt=0 if topic_cnt == None else topic_cnt,
@@ -145,6 +141,20 @@ class CategoryAccess(BaseModel):
     user_id: int
     can_read: bool = Field(default=True, description="The user can read the category")
     can_write: bool = Field(default=False, description="The user can add or edit posts in the category")
+
+
+    @classmethod
+    def from_query_result(cls, user_id,
+                          category_id, can_read, can_write
+                            ):
+
+        return cls(
+                    category_id=category_id,
+                    user_id=user_id,
+                    can_read=True if can_read == 1 else False,
+                    can_write=True if can_write == 1 else False
+                )
+
 
 
 class Reply(BaseModel):
@@ -178,6 +188,10 @@ class Vote(BaseModel):
 class Conversation(BaseModel):
 
     username: str = None or None
+
+class VisibilityAuth(BaseModel):
+
+    visibility: int
 
 
 class TopicQueryParams(BaseModel):

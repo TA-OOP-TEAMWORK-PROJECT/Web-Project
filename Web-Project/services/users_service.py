@@ -1,12 +1,8 @@
 from string import punctuation, whitespace, digits, ascii_lowercase, ascii_uppercase
-from typing import Optional, List
-
 from common import auth
 from data_.models import *
 from data_.database import read_query, insert_query
-from mariadb import IntegrityError
 from fastapi import HTTPException, Header
-from typing import Optional
 
 _SEPARATOR = ';'
 ALGORITHM = "HS256"
@@ -62,7 +58,7 @@ def from_token(token: str) -> User | None:
 def find_by_username(username: str) -> User | None:
     data = read_query(
         '''SELECT id, username, first_name,
-        last_name, email, date_of_birth, hashed_password
+        last_name, email, date_of_birth, hashed_password, role
         FROM users WHERE username = ?''',
         (username,))
 
@@ -148,15 +144,29 @@ def validate_input(username: str) -> bool:
         return False
     return True
 
+def get_user_access(user_id, category_id):
 
-# def is_authenticated(token: str) -> bool:   #!!!! Trqbwa da e swyrzano s mariaDb
-#     # note: this token is not particulary secure, use JWT for real-world uses
-#     user_id, username = token.split(_SEPARATOR)
-#     data = read_query('''
-#     SELECT id, username
-#     FROM users
-#     WHERE id = ?''',
-#                       (user_id, ))
-#     if data[0]:
-#         return True
-#     return False
+    category_data = read_query(
+        '''SELECT is_private
+        FROM category 
+        WHERE id = ?''',
+        (category_id,))
+
+    if category_data[0][0] == 0:
+        return CategoryAccess(category_id=category_id, user_id=user_id, can_read=1, can_write=1)
+
+    access_data = read_query('''
+       SELECT can_read, can_write
+       FROM category_access
+       WHERE users_id = ? and category_id = ?''',
+    (user_id, category_id))
+
+    if not len(access_data) == 0:
+        can_read, can_write = access_data[0]
+
+    else:
+        raise HTTPException(status_code=401, detail='You are not authorized!')
+
+    return CategoryAccess(category_id=category_id, user_id=user_id, can_read=can_read, can_write=can_write)
+
+

@@ -27,11 +27,12 @@ def current_user(username):
             "last_name": user.last_name,
             "email": user.email,
             "hashed_password": user.hashed_password,
+            "role": user.role,
             "disabled": False
         }
     }
 
-    return users_db ##
+    return users_db
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -109,49 +110,3 @@ async def get_current_admin_user(current_user: Annotated[User, Depends(get_curre
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# {
-#     "username":"johndoe",
-#     "password":"secret"
-# }
-
-
-# {
-#     "username":"minko69",
-#     "password":"secret"
-# }
-
-#
-# class Token(BaseModel):
-#     access_token: str
-#     token_type: str
-#
-#
-# class TokenData(BaseModel):
-#     username: str | None = None
-#
-#
-# class User(BaseModel):
-#     username: str
-#     email: str | None = None
-#     full_name: str | None = None
-#     disabled: bool | None = None
-#
-#
-# class UserInDB(User):
-#     hashed_password: str

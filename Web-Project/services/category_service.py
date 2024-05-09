@@ -1,5 +1,6 @@
-from data_.models import Category, Topic
-from data_.database import read_query
+from fastapi import Response
+from data_.models import Category, Topic, User, CategoryAccess
+from data_.database import read_query, insert_query, update_query
 
 
 def get_all_categories():
@@ -12,20 +13,19 @@ def get_all_categories():
         return get_category_response(result)
 
 
-def get_category_response(category):
+def create(category, user):
 
-    cat_dict = {}
-    for cat in category:
-        cat_dict[f'Category name: {cat.title}'] = {
 
-            "Category title": cat.title,
-            "Description": cat.description,
-            "Number of topics in category": cat.topic_cnt,
-            "Last topic is:": cat.last_topic
-                                        }
+    if not user.role == 'admin':
+        return Response(status_code=401, content='You are not authorized!')
 
-    return cat_dict
+    generated_id = insert_query('''
+    INSERT INTO category(title, description)
+    VALUES(?,?)''',
+    (category.title, category.description))
 
+    category.id = generated_id
+    return f'Category with title {category.title} was created successfully!'
 
 
 def get_topics_for_category(category_id: int, search: str = None, sort_by: str = None,
@@ -58,6 +58,22 @@ def get_topics_for_category(category_id: int, search: str = None, sort_by: str =
     return topics_dict
 
 
+def user_access_state(visibility, category_id, user): # SET is_private where category_id == category_id
+
+    if not user.role == 'admin':
+        return Response(status_code=401, content='You are not authorized!')
+
+    update_query('''
+    UPDATE category
+    SET is_private = ?
+    WHERE id = ? ''',
+    (visibility.visibility, category_id))
+
+    if visibility.visibility == 1:
+        return 'Category is changed to private'
+    return 'Category can be seen from all users'
+
+
 def get_category_by_id(id):
     data = read_query(
         '''SELECT title
@@ -65,3 +81,28 @@ def get_category_by_id(id):
         (id,))
 
     return data[0][0]
+
+
+def get_user_access_state(user: User):
+    data = read_query('''
+    SELECT users_id, category_id, can_read, can_write
+    FROM category_access
+    WHERE users_id = ?''',
+    (user.id, ))
+
+    return CategoryAccess.from_query_result(*data[0])
+
+
+def get_category_response(category):
+
+    cat_dict = {}
+    for cat in category:
+        cat_dict[f'Category name: {cat.title}'] = {
+
+            "Category title": cat.title,
+            "Description": cat.description,
+            "Number of topics in category": cat.topic_cnt,
+            "Last topic is:": cat.last_topic
+                                        }
+
+    return cat_dict
