@@ -9,7 +9,7 @@ from services.users_service import get_user_access
 reply_router = APIRouter(prefix='/reply')
 
 
-@reply_router.post("/{category_id}/{topic_id}")
+@reply_router.post("/{category_id}/{topic_id}") #
 def create_reply(reply: Reply, category_id, topic_id,
                  current_user: Annotated[User, Depends(get_current_active_user)]):
 
