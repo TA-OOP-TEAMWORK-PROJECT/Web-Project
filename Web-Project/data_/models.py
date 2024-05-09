@@ -22,14 +22,14 @@ class User(BaseModel):
     last_name: str = Field(max_length=45)
     email: EmailStr
     date_of_birth: date | None = None
-    role: str = Field(default="user" , description="User role, e.g., 'admin', 'user'")
+    role: str = Field(default=Role.USER, description="User role, e.g., 'admin', 'user'")
     hashed_password: str | None = None
     disabled: bool | None = None
 
 
     @classmethod
     def from_query_result(cls, id: int, username: str, first_name: str, last_name: str, email: str,
-                          date_of_birth: date, hashed_password,role):
+                          date_of_birth: date, hashed_password, role):
         return cls(id=id,
                    username=username,
                    first_name=first_name,
@@ -114,13 +114,12 @@ class Category(BaseModel):
     description: str|None = None
     last_topic: str | None = None
     topic_cnt: int | None = None
-    user_id: int = None
     is_private: bool = Field(default=False, description="The category is visible for everyone")
 
 
     @classmethod
     def from_query_result(cls, id, title, description,
-                          last_topic, topic_cnt, user_id
+                          last_topic, topic_cnt
     ):
 
 
@@ -131,8 +130,7 @@ class Category(BaseModel):
                     if description == None else description,
                     last_topic='There are no topics on this category yet'
                                 if last_topic == None else last_topic,
-                    topic_cnt=0 if topic_cnt == None else topic_cnt,
-                    user_id=user_id or None
+                    topic_cnt=0 if topic_cnt == None else topic_cnt
                 )
 
 
@@ -155,6 +153,10 @@ class CategoryAccess(BaseModel):
                     can_write=True if can_write == 1 else False
                 )
 
+
+class AccessRevocation(BaseModel):
+    revoke_read: bool = Field(default=False)
+    revoke_write: bool = Field(default=False)
 
 
 class Reply(BaseModel):
@@ -189,8 +191,8 @@ class Conversation(BaseModel):
 
     username: str = None or None
 
-class VisibilityAuth(BaseModel):
 
+class VisibilityAuth(BaseModel):
     visibility: int
 
 
