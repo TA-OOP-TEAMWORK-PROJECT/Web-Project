@@ -1,12 +1,10 @@
-from fastapi import HTTPException
-
-from data_.models import Category, Topic, CategoryAccess
-from data_.database import read_query, update_query, insert_query
-from services.users_service import find_by_id
+from fastapi import Response
+from data_.models import Category, Topic, User, CategoryAccess
+from data_.database import read_query, insert_query, update_query
 
 
 def get_all_categories():
-    data = read_query('''SELECT id, title, description, last_topic, topic_cnt
+    data = read_query('''SELECT id, title, description, last_topic, topic_cnt, user_id
          FROM category''')
 
     result = (Category.from_query_result(*row) for row in data)
@@ -15,46 +13,24 @@ def get_all_categories():
         return get_category_response(result)
 
 
-def get_category_response(category):
-
-    cat_dict = {}
-    for cat in category:
-        cat_dict[f'Category name: {cat.title}'] = {
-
-            "Category title": cat.title,
-            "Description": cat.description,
-            "Number of topics in category": cat.topic_cnt,
-            "Last topic is:": cat.last_topic
-                                        }
-
-    return cat_dict
+def create(category, user):
 
 
+    if not user.role == 'admin':
+        return Response(status_code=401, content='You are not authorized!')
 
-def get_topics_for_category(user_id:int, category_id: int, search: str = None, sort_by: str = None,
+    generated_id = insert_query('''
+    INSERT INTO category(title, description)
+    VALUES(?,?)''',
+    (category.title, category.description))
+
+    category.id = generated_id
+    return f'Category with title {category.title} was created successfully!'
+
+
+def get_topics_for_category(category_id: int, search: str = None, sort_by: str = None,
                             page: int = 1, limit: int = 10):
-    category = read_query(
-        "SELECT is_private FROM category WHERE id = ?",
-        (category_id,)
-    )
-
-    if category:
-        is_private = category[0][0]
-
-        if not is_private:
-            return fetch_all_topics_for_category(category_id, search, sort_by, page, limit)
-        else:
-            if check_category_read_access(user_id, category_id):
-                return fetch_all_topics_for_category(category_id, search, sort_by, page, limit)
-            else:
-                raise HTTPException(status_code=403, detail="Access denied")
-
-    raise HTTPException(status_code=404, detail="Category not found")
-
-
-def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, page: int, limit: int):
-
-    sql = 'SELECT id, title, date, last_reply, users_id, category_id FROM topic WHERE category_id = %s'
+    sql = 'SELECT id, title, date, last_reply, user_id, category_id FROM topic WHERE category_id = %s'
     sql_params = (category_id,)
 
     if search:
@@ -81,6 +57,23 @@ def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, p
 
     return topics_dict
 
+
+def user_access_state(visibility, category_id, user): # SET is_private where category_id == category_id
+
+    if not user.role == 'admin':
+        return Response(status_code=401, content='You are not authorized!')
+
+    update_query('''
+    UPDATE category
+    SET is_private = ?
+    WHERE id = ? ''',
+    (visibility.visibility, category_id))
+
+    if visibility.visibility == 1:
+        return 'Category is changed to private'
+    return 'Category can be seen from all users'
+
+
 def get_category_by_id(id):
     data = read_query(
         '''SELECT title
@@ -90,27 +83,26 @@ def get_category_by_id(id):
     return data[0][0]
 
 
-def grant_category_read_access(user_id: int, category_id: int):
-    existing_access = read_query(
-        "SELECT 1 FROM category_access WHERE user_id = ? AND category_id = ?",
-        (user_id, category_id)
-    )
-    if existing_access:
-        update_query(
-            "UPDATE category_access SET can_read = TRUE WHERE user_id = ? AND category_id = ?",
-            (user_id, category_id)
-        )
-    else:
-        insert_query(
-            "INSERT INTO category_access (user_id, category_id, can_read, can_write) VALUES (?, ?, TRUE, FALSE)",
-            (user_id, category_id)
-        )
-    return {"message": "Read access granted to the user."}
+def get_user_access_state(user: User):
+    data = read_query('''
+    SELECT users_id, category_id, can_read, can_write
+    FROM category_access
+    WHERE users_id = ?''',
+    (user.id, ))
+
+    return CategoryAccess.from_query_result(*data[0])
 
 
-def check_category_read_access(user_id: int, category_id: int):
-    access = read_query(
-        "SELECT can_read FROM category_access WHERE user_id = ? AND category_id = ?",
-        (user_id, category_id)
-    )
-    return access and access[0][0]
+def get_category_response(category):
+
+    cat_dict = {}
+    for cat in category:
+        cat_dict[f'Category name: {cat.title}'] = {
+
+            "Category title": cat.title,
+            "Description": cat.description,
+            "Number of topics in category": cat.topic_cnt,
+            "Last topic is:": cat.last_topic
+                                        }
+
+    return cat_dict

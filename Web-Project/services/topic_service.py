@@ -1,8 +1,9 @@
 from data_.models import Topic, Reply
-from data_.database import insert_query, read_query, update_query
+from data_.database import insert_query, read_query
 from services import reply_service
-from services.users_service import find_by_id
+from fastapi import Response
 from services.category_service import get_category_by_id
+from services.users_service import get_user_access
 
 
 def search_all_topics(search: str = None or None):
@@ -45,7 +46,7 @@ def get_topic_by_id(id, cur_user):
     FROM reply
     WHERE id = ?''',
                               (data[0][-1], ))
-    a = replies_data
+
 
     replies = [Reply.from_query_result(*r) for r in replies_data if not r==None]
     topic = Topic.from_query_result(*data[0])
@@ -67,13 +68,14 @@ def get_topic_replies(replies):
 def create(topic: Topic, cur_user, category_id):
 
     generated_id = insert_query('''
-    INSERT INTO topic(title, date, user_id, category_id) 
+    INSERT INTO topic(title, date, users_id, category_id) 
     VALUES(?,?,?,?)''',
     (topic.title, topic.cur_date, cur_user.id, category_id))
 
     topic.id = generated_id
     topic.category_id = category_id
-    return topic
+
+    return create_topic_response(topic, cur_user)
 
 
 def best_reply(topic_id, reply_id, user):
@@ -120,8 +122,6 @@ def get_all_topic_response(topics):
         }
 
     return topics_dict
-
-
 
 
 

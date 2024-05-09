@@ -3,7 +3,7 @@ from fastapi import APIRouter, Response, Depends
 from common.auth import User, get_current_active_user, get_current_user
 from data_.models import Topic
 from services import topic_service
-
+from services.users_service import get_user_access
 
 topic_router = APIRouter(prefix='/topic')
 
@@ -21,7 +21,7 @@ def view_all_topics(
     return result
 
 
-@topic_router.get('/{id}')
+@topic_router.get('/{id}')  # da ima read prava
 def view_by_id(id: int,
                current_user: Annotated[User, Depends(get_current_active_user)]):
 
@@ -37,13 +37,19 @@ def view_by_id(id: int,
 def create_topic(topic: Topic, category_id: int,
                  current_user: Annotated[User, Depends(get_current_active_user)]):
 
+    user_access = get_user_access(current_user.id, category_id)
+    if user_access.can_write == 0:
+        return Response(status_code=401, content='You are not authorized!')
+
     topic = topic_service.create(topic, current_user, category_id)
-    return topic_service.create_topic_response(topic, current_user)
+
+    return topic
 
 
-@topic_router.put('/{topic_id}/{reply_id}')
+@topic_router.put('/{topic_id}/{reply_id}') # da prowerq dali usera e avtora na topica
 def view_reply(topic_id, reply_id,
                current_user: Annotated[User, Depends(get_current_user)]):
+
 
 
     return topic_service.best_reply(topic_id, reply_id, current_user)
