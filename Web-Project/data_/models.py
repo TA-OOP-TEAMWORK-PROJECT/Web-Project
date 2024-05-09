@@ -29,7 +29,7 @@ class User(BaseModel):
 
     @classmethod
     def from_query_result(cls, id: int, username: str, first_name: str, last_name: str, email: str,
-                          date_of_birth: date, hashed_password, role):
+                          date_of_birth: date, hashed_password,role):
         return cls(id=id,
                    username=username,
                    first_name=first_name,
@@ -95,17 +95,19 @@ class Topic(BaseModel):
     user_id: int| None = None
     category_id: int| None = None
     best_reply: int | None = None
+    is_locked:bool = Field(default=False)
 
     @classmethod
     def from_query_result(cls, id, title, cur_date,
-                          last_reply, user_id, category_id):
+                          last_reply, user_id, category_id, is_locked):
         return cls(
             id=id,
             title=title,
             cur_date=cur_date,
             last_reply= 'There are no replies on that topic yet!' if last_reply is None else last_reply,
             user_id=user_id,
-            category_id=category_id)
+            category_id=category_id,
+            is_locked=is_locked)
 
 
 class Category(BaseModel):
@@ -115,13 +117,13 @@ class Category(BaseModel):
     last_topic: str | None = None
     topic_cnt: int | None = None
     is_private: bool = Field(default=False, description="The category is visible for everyone")
+    is_locked: bool = Field(default=False)
 
 
     @classmethod
     def from_query_result(cls, id, title, description,
-                          last_topic, topic_cnt
+                        last_topic, topic_cnt, is_private, is_locked
     ):
-
 
         return cls(
                     id= id,
@@ -130,7 +132,9 @@ class Category(BaseModel):
                     if description == None else description,
                     last_topic='There are no topics on this category yet'
                                 if last_topic == None else last_topic,
-                    topic_cnt=0 if topic_cnt == None else topic_cnt
+                    topic_cnt=0 if topic_cnt == None else topic_cnt,
+                    is_private=is_private,
+                    is_locked=is_locked
                 )
 
 
@@ -165,7 +169,7 @@ class Reply(BaseModel):
     cur_date: datetime = datetime.now()
     content: str = Field(min_length=1)
     likes_cnt: int|None = None
-    dislikes_cnt: int|None= 0 ## Подсигурява, че не можем да имаме негативен брой ляйк/дисляйк, вместо проверка.
+    dislikes_cnt: int|None = 0
     topic_id: int|None = 0
 
 
@@ -183,7 +187,7 @@ class Reply(BaseModel):
 class Vote(BaseModel):
 
     reply_id: int = None or None
-    sender_id: int = None or None
+    users_id: int = None or None
     vote: int
 
 

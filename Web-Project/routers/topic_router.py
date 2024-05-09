@@ -3,7 +3,9 @@ from fastapi import APIRouter, Response, Depends
 from common.auth import User, get_current_active_user, get_current_user
 from data_.models import Topic
 from services import topic_service
-from services.users_service import get_user_access
+from services.category_service import category_is_private, get_category_by_id
+from services.topic_service import lock
+from services.users_service import users_access_state
 
 topic_router = APIRouter(prefix='/topic')
 
@@ -37,22 +39,29 @@ def view_by_id(id: int,
 def create_topic(topic: Topic, category_id: int,
                  current_user: Annotated[User, Depends(get_current_active_user)]):
 
-    user_access = get_user_access(current_user.id, category_id)
-    if user_access.can_write == 0:
-        return Response(status_code=401, content='You are not authorized!')
+    category = get_category_by_id(category_id)
+    if category.is_private:
+
+        if not users_access_state(current_user.id, category_id):
+            return Response(status_code=401, content='You are not authorized!')
+
+    if category.is_locked:
+        return Response(status_code=423, content='Category is locked')
 
     topic = topic_service.create(topic, current_user, category_id)
 
     return topic
 
 
-@topic_router.put('/{topic_id}/{reply_id}') # da prowerq dali usera e avtora na topica
-def view_reply(topic_id, reply_id,
+@topic_router.put('/{topic_id}/{reply_id}')
+def view_best_reply(topic_id, reply_id,
                current_user: Annotated[User, Depends(get_current_user)]):
-
-
 
     return topic_service.best_reply(topic_id, reply_id, current_user)
 
 
+@topic_router.patch('/lock/{topic_id}')
+async def lock_topic(topic_id: int,
+                        current_user: Annotated[User, Depends(get_current_active_user)]):
 
+    return lock(topic_id, current_user)

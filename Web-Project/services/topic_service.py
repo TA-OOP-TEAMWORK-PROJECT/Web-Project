@@ -1,15 +1,14 @@
 from data_.models import Topic, Reply
-from data_.database import insert_query, read_query
-from services import reply_service
-from fastapi import Response
+from data_.database import insert_query, read_query, update_query
+from fastapi import Response, HTTPException
 from services.category_service import get_category_by_id
-from services.users_service import get_user_access
+
 
 
 def search_all_topics(search: str = None or None):
     if search is None:
         data = read_query(
-            '''SELECT id, title, date, last_reply, user_id, category_id
+            '''SELECT id, title, date, last_reply, users_id, category_id
                FROM topic''')
 
         #за да излезе резултат отивам в get_user_by_id/ get_categoy_by_id
@@ -72,6 +71,12 @@ def create(topic: Topic, cur_user, category_id):
     VALUES(?,?,?,?)''',
     (topic.title, topic.cur_date, cur_user.id, category_id))
 
+    insert_query('''
+        UPDATE category
+        SET last_topic = ?
+        WHERE id = ?''',
+        (topic.title, category_id))
+
     topic.id = generated_id
     topic.category_id = category_id
 
@@ -81,22 +86,42 @@ def create(topic: Topic, cur_user, category_id):
 def best_reply(topic_id, reply_id, user):
 
     topic_user = read_query('''
-    SELECT user_id
+    SELECT users_id
     FROM topic
     WHERE id=?''',
     (topic_id, ))
 
-    if topic_user[0][0] == user.id:
+    if not topic_user[0][0] == user.id:
+        raise HTTPException(status_code=401, detail="You are not the owner of this topic")
 
-        insert_best_reply = insert_query('''
-        UPDATE topic
-        SET best_reply = ?
-        WHERE id = ? ''',
-        (reply_id, topic_id))
+    best_reply_content = read_query('''
+    SELECT content
+    FROM reply
+    WHERE id = ?''',
+    (reply_id, ))
 
-    reply = reply_service.get_by_id(reply_id)
-    return (f' The best reply is :'
-            f'{reply_service.create_reply_response(reply)}')
+    insert_best_reply = insert_query('''
+    UPDATE topic
+    SET best_reply = ?
+    WHERE id = ? ''',
+    (best_reply_content[0][0], topic_id))
+
+    return (f' Best reply: {best_reply_content[0][0]}')
+
+
+def lock(topic_id, user):
+
+    if not user.role == 'admin':
+        return Response(status_code=401, content='You are not authorized!')
+
+    update_query('''
+    Update topic
+    SET is_locked = 1
+    WHERE id = ?''',
+    (topic_id, ))
+
+    return 'Topic has been locked!'
+
 
 
 def create_topic_response(topic, user):
@@ -106,7 +131,7 @@ def create_topic_response(topic, user):
         'title': topic.title,
         'date of publication': topic.cur_date.strftime('%Y/%m/%d'),
         'published by': f'{user.username}',
-        'category title': f'{category}'
+        'category title': f'{category.title}'
     }
 
 
@@ -124,7 +149,16 @@ def get_all_topic_response(topics):
     return topics_dict
 
 
+def get_topic_by_id(topic_id):
 
+    data = read_query(
+        '''SELECT id, title, date, last_reply, users_id, category_id, is_locked
+        FROM topic WHERE id = ?''',
+        (topic_id,))
+
+
+    topic = next((Topic.from_query_result(*row) for row in data), None)
+    return topic
 
 
 

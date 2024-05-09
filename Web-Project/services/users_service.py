@@ -144,29 +144,17 @@ def validate_input(username: str) -> bool:
         return False
     return True
 
-def get_user_access(user_id, category_id):
-
-    category_data = read_query(
-        '''SELECT is_private
-        FROM category 
-        WHERE id = ?''',
-        (category_id,))
-
-    if category_data[0][0] == 0:
-        return CategoryAccess(category_id=category_id, user_id=user_id, can_read=1, can_write=1)
+def users_access_state(user_id, category_id):
 
     access_data = read_query('''
-       SELECT can_read, can_write
-       FROM category_access
-       WHERE users_id = ? and category_id = ?''',
-    (user_id, category_id))
+    SELECT users_id
+    FROM category_access
+    WHERE category_id = ? AND users_id = ?''',
+    (category_id, user_id))
 
-    if not len(access_data) == 0:
-        can_read, can_write = access_data[0]
+    if user_id in access_data[0]:
+        return True
 
-    else:
-        raise HTTPException(status_code=401, detail='You are not authorized!')
-
-    return CategoryAccess(category_id=category_id, user_id=user_id, can_read=can_read, can_write=can_write)
+    return False
 
 

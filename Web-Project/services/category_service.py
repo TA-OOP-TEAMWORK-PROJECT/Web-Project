@@ -4,7 +4,7 @@ from data_.database import read_query, insert_query, update_query
 
 
 def get_all_categories():
-    data = read_query('''SELECT id, title, description, last_topic, topic_cnt
+    data = read_query('''SELECT id, title, description, last_topic, topic_cnt, is_private, is_locked
          FROM category''')
 
     result = (Category.from_query_result(*row) for row in data)
@@ -13,10 +13,7 @@ def get_all_categories():
         return get_category_response(result)
 
 
-def create(category, user):
-
-    if not user.role == 'admin':
-        return Response(status_code=401, content='You are not authorized!')
+def create(category):
 
     generated_id = insert_query('''
     INSERT INTO category(title, description)
@@ -80,8 +77,7 @@ def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, p
 
 def user_access_state(visibility, category_id, user):
 
-    if not user.role == Role.ADMIN:
-        return Response(status_code=401, content='You are not authorized!')
+
 
     update_query('''
     UPDATE category
@@ -96,11 +92,13 @@ def user_access_state(visibility, category_id, user):
 
 def get_category_by_id(id):
     data = read_query(
-        '''SELECT title
+        '''SELECT id, title, description, last_topic, topic_cnt, is_private, is_locked
         FROM category WHERE id = ?''',
         (id,))
 
-    return data[0][0]
+
+    category = next((Category.from_query_result(*row) for row in data), None)
+    return category
 
 
 def get_user_access_state(user: User):
@@ -227,3 +225,40 @@ def get_privileged_users(category_id: int):
         for user in users_access
     ]
     return access_list
+
+
+def lock(category_id, current_user): #да проверя дали вече не е заключена?
+
+    if not current_user.role == 'admin':
+        return Response(status_code=401, content='You are not authorized!')
+
+    update_query('''
+    Update category
+    SET is_locked = 1
+    WHERE id = ?''',
+    (category_id, ))
+
+    return 'Category has been locked!'
+
+
+def category_is_private(category_id):
+
+    category_data = read_query(
+        '''SELECT is_private
+        FROM category 
+        WHERE id = ?''',
+        (category_id,))
+
+    if category_data[0][0] == 0:
+        return False
+    return True
+
+
+
+
+
+
+
+
+
+
