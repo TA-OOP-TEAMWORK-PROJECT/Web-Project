@@ -5,7 +5,7 @@ from data_.models import Message, User, MessageCreate, Conversation
 from services import message_service
 
 
-message_router = APIRouter(prefix='/message', tags=["Messages"])
+message_router = APIRouter(prefix='/messages', tags=["Messages"])
 
 
 @message_router.post('/', response_model=Message)

@@ -47,7 +47,7 @@ def get_topics_for_category(user_id: int, category_id: int, search: str = None, 
 
 def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, page: int, limit: int):
 
-    sql = 'SELECT id, title, date, last_reply, user_id, category_id FROM topic WHERE category_id = %s'
+    sql = 'SELECT id, title, date, last_reply, user_id, category_id, is_locked FROM topic WHERE category_id = %s'
     sql_params = (category_id,)
 
     if search:
@@ -75,9 +75,7 @@ def fetch_all_topics_for_category(category_id: int, search: str, sort_by: str, p
     return topics_dict
 
 
-def user_access_state(visibility, category_id, user):
-
-
+def user_access_state(visibility, category_id):
 
     update_query('''
     UPDATE category

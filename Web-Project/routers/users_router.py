@@ -3,7 +3,7 @@ from services import users_service
 from common.auth import *
 
 
-users_router = APIRouter(prefix='/user')
+users_router = APIRouter(prefix='/users')
 
 
 @users_router.post('/register')

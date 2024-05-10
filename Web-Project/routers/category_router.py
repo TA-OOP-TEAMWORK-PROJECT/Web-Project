@@ -9,27 +9,28 @@ from services.category_service import (get_topics_for_category, grant_category_r
                                        revoke_category_read_or_write_access, get_privileged_users)
 
 
-category_router = APIRouter(prefix='/category')
+category_router = APIRouter(prefix='/categories')
 
-@category_router.get("/")
-async def read_categories():
+@category_router.get("/") # da ne se vijdat private categories osven za admin ili s prava
+async def read_categories(current_user: Annotated[User, Depends(get_current_active_user)]):
+
     categories = get_all_categories()
     return categories
 
 
 @category_router.get('/{category_id}/topics')
-def get_topics_by_category(
-    category_id: int, user: Annotated[User, Depends(get_current_active_user)],
+async def get_topics_by_category(
+    category_id: int, current_user: Annotated[User, Depends(get_current_active_user)],
     params: TopicQueryParams = Depends(),
 ):
-    is_admin = user.is_admin()
-    topics = get_topics_for_category(user.id, category_id, params.search, params.sort_by, params.page, params.limit, is_admin)
+    is_admin = current_user.is_admin()
+    topics = get_topics_for_category(current_user.id, category_id, params.search, params.sort_by, params.page, params.limit, is_admin)
     return topics
 
 @category_router.post('/')
 async def create_category(category: Category,
-                          admin: Annotated[User, Depends(get_current_active_user)]):
-    if not admin.role == Role.ADMIN:
+                          admin: Annotated[User, Depends(get_current_admin_user)]):
+    if not admin:
         return Response(status_code=401, content='You are not authorized!')
 
     return create(category)
@@ -37,12 +38,12 @@ async def create_category(category: Category,
 
 @category_router.put('/{category_id}/visibility')
 async def category_access(visibility: VisibilityAuth, category_id: int,
-                          admin: Annotated[User, Depends(get_current_active_user)]):
+                          admin: Annotated[User, Depends(get_current_admin_user)]):
 
-    if not admin.role == Role.ADMIN:
+    if not admin:
         return Response(status_code=401, content='You are not authorized!')
 
-    return user_access_state(visibility, category_id, admin)
+    return user_access_state(visibility, category_id)
 
 
 @category_router.post("/{category_id}/users/{user_id}/read")
@@ -83,8 +84,8 @@ async def view_privileged_users(category_id: int, admin: Annotated[User, Depends
 
 @category_router.put('/lock/{category_id}')
 async def lock_category(category_id: int,
-                        admin: Annotated[User, Depends(get_current_active_user)]):
+                        admin: Annotated[User, Depends(get_current_admin_user)]):
 
-    if not admin.role == Role.ADMIN:
+    if not admin:
         return Response(status_code=401, content='You are not authorized!')
     return lock(category_id, admin)

@@ -5,16 +5,17 @@ from services.category_service import get_category_by_id
 
 
 
-def search_all_topics(search: str = None or None):
+def search_all_topics(search: str = None or None):  # if category is_private  да не се вижда без права
+
     if search is None:
         data = read_query(
-            '''SELECT id, title, date, last_reply, users_id, category_id
+            '''SELECT id, title, date, last_reply, user_id, category_id, is_locked
                FROM topic''')
 
         #за да излезе резултат отивам в get_user_by_id/ get_categoy_by_id
     else:
         data = read_query(
-            '''SELECT id, title, date, last_reply, user_id, category_id
+            '''SELECT id, title, date, last_reply, user_id, category_id, is_locked
                FROM topic 
                WHERE title LIKE ?''', (f'%{search}%',)) # ако искаме да се търси и по дата например, може да се добави още един ?
 
@@ -35,7 +36,7 @@ def sort_all_topics(topics: list[Topic], sort_by, is_reverse ):
 
 def get_topic_by_id(id, cur_user):
     data = read_query(
-        '''SELECT id, title, date, last_reply, users_id, category_id
+        '''SELECT id, title, date, last_reply, user_id, category_id, is_locked
                FROM topic
                WHERE id = ?''',
             (id,))
@@ -67,7 +68,7 @@ def get_topic_replies(replies):
 def create(topic: Topic, cur_user, category_id):
 
     generated_id = insert_query('''
-    INSERT INTO topic(title, date, users_id, category_id) 
+    INSERT INTO topic(title, date, user_id, category_id) 
     VALUES(?,?,?,?)''',
     (topic.title, topic.cur_date, cur_user.id, category_id))
 
@@ -86,7 +87,7 @@ def create(topic: Topic, cur_user, category_id):
 def best_reply(topic_id, reply_id, user):
 
     topic_user = read_query('''
-    SELECT users_id
+    SELECT user_id
     FROM topic
     WHERE id=?''',
     (topic_id, ))
@@ -152,7 +153,7 @@ def get_all_topic_response(topics):
 def get_topic_by_id(topic_id):
 
     data = read_query(
-        '''SELECT id, title, date, last_reply, users_id, category_id, is_locked
+        '''SELECT id, title, date, last_reply, user_id, category_id, is_locked
         FROM topic WHERE id = ?''',
         (topic_id,))
 

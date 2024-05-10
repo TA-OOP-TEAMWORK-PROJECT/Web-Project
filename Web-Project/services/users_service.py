@@ -147,14 +147,16 @@ def validate_input(username: str) -> bool:
 def users_access_state(user_id, category_id):
 
     access_data = read_query('''
-    SELECT users_id
+    SELECT user_id
     FROM category_access
-    WHERE category_id = ? AND users_id = ?''',
+    WHERE category_id = ? AND user_id = ?''',
     (category_id, user_id))
 
-    if user_id in access_data[0]:
-        return True
+    if not access_data:
+        return False
 
-    return False
+    return True
+
+
 
 

@@ -55,7 +55,7 @@ def create_reply_response(reply):
 
 def create_vote(new_vote: Vote):
     generated_id = insert_query('''
-        INSERT INTO vote(reply_id, users_id, vote)
+        INSERT INTO vote(reply_id, user_id, vote)
         VALUES(?,?,?)''',
         (new_vote.reply_id, new_vote.users_id, new_vote.vote))
 
@@ -67,9 +67,9 @@ def vote_change(new_vote:Vote, reply, cur_user):
     new_vote.users_id = cur_user.id
 
     vote_data = read_query('''
-    SELECT reply_id, users_id, vote
+    SELECT reply_id, user_id, vote
     FROM vote
-    WHERE reply_id = ? and users_id = ?''',
+    WHERE reply_id = ? and user_id = ?''',
     (reply.id, cur_user.id))
 
 
@@ -92,7 +92,7 @@ def vote_change(new_vote:Vote, reply, cur_user):
             update_query('''
                 DELETE vote
                 FROM vote
-                WHERE reply_id=? and users_id = ?''',
+                WHERE reply_id=? and user_id = ?''',
                 (reply.id, cur_user.id))
 
             if new_vote.vote == 1:
@@ -117,7 +117,7 @@ def vote_change(new_vote:Vote, reply, cur_user):
             update_query('''
                UPDATE vote
                SET vote =?
-               WHERE reply_id = ? and  users_id = ?''',
+               WHERE reply_id = ? and  user_id = ?''',
                          (new_vote.vote, reply.id, cur_user.id))
 
             result = 'like' if new_vote.vote == 1 else 'hate'
