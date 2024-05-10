@@ -1,16 +1,17 @@
 from fastapi import Response, HTTPException
 from data_.models import Category, Topic, User, CategoryAccess, Role
 from data_.database import read_query, insert_query, update_query
+from services.users_service import users_access_state
 
 
-def get_all_categories():
+def get_all_categories(user):
     data = read_query('''SELECT id, title, description, last_topic, topic_cnt, is_private, is_locked
          FROM category''')
 
     result = (Category.from_query_result(*row) for row in data)
 
     if result is not None:
-        return get_category_response(result)
+        return get_category_response(user, result)
 
 
 def create(category):
@@ -109,10 +110,18 @@ def get_user_access_state(user: User):
     return CategoryAccess.from_query_result(*data[0])
 
 
-def get_category_response(category):
+def get_category_response(user, category):
 
     cat_dict = {}
     for cat in category:
+
+        is_category = category_is_private(cat.id)
+
+        if is_category:
+
+            user_access = users_access_state(user.id, cat.id)
+            if not user_access:
+                continue
         cat_dict[f'Category name: {cat.title}'] = {
 
             "Category title": cat.title,

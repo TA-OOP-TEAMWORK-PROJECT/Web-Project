@@ -8,14 +8,14 @@ from services import message_service
 message_router = APIRouter(prefix='/messages', tags=["Messages"])
 
 
-@message_router.post('/', response_model=Message)
+@message_router.post('/')
 def create_message(message: MessageCreate, current_user:
                    Annotated[User, Depends(get_current_active_user)]):
 
     return message_service.create_message(message, current_user)
 
 
-@message_router.get("/{user_id}", response_model=list[Message])
+@message_router.get("/{user_id}")
 def get_conversation_endpoint(user_id: int,
                               current_user: Annotated[User, Depends(get_current_active_user)]):
 
