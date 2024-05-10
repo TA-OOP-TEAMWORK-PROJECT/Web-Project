@@ -17,12 +17,15 @@ def create_reply(reply: Reply, category_id, topic_id,
 
     category = get_category_by_id(category_id)
     topic = get_topic_by_id(topic_id)
-    if category.is_private or category.is_locked:
 
+    if category.is_private:
         if not users_access_state(current_user.id, category_id):
             return Response(status_code=401, content='You are not authorized!')
 
     if topic.is_locked:
+        return Response(status_code=423, content='Topic is locked')
+
+    if category.is_locked:
         return Response(status_code=423, content='Category is locked')
 
     reply = reply_service.create(reply, topic_id)
