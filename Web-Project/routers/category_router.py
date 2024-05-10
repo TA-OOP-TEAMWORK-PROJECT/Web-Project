@@ -75,11 +75,10 @@ async def revoke_access(category_id: int, user_id: int, access: AccessRevocation
 
 @category_router.get("/{category_id}/privileged-users")
 async def view_privileged_users(category_id: int, admin: Annotated[User, Depends(get_current_admin_user)]):
-    if not admin:                                                                                                           #.Role
+    if not admin:
         return Response(status_code=401, content='You are not authorized!')
     users = get_privileged_users(category_id)
     return {"category_id": category_id, "users": users}
-
 
 
 @category_router.put('/lock/{category_id}')
