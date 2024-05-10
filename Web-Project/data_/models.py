@@ -76,7 +76,7 @@ class Message(BaseModel):
             content=content,
             sender_id=sender_id,
             receiver_id=receiver_id,
-            created_id=created_at
+            created_id=created_at.strftime('%Y/%m/%d')
        )
 
 

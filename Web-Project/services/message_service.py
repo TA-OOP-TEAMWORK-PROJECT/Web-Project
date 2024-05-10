@@ -3,6 +3,8 @@ from fastapi import Response
 from data_.database import insert_query, read_query
 from datetime import datetime
 
+from services.users_service import find_by_id
+
 
 def create_message(message_data: MessageCreate, cur_user: User):
 
@@ -21,7 +23,13 @@ def create_message(message_data: MessageCreate, cur_user: User):
         (message_data.content, cur_user.id, message_data.receiver_id, datetime.now())
     )
 
-    return Message(**message_data.dict(), id=message_id, sender_id=cur_user.id)
+    message = Message(**message_data.dict(), id=message_id, sender_id=cur_user.id)
+
+    return {
+        "Message content": message.content,
+        "Sent at": message.created_at.strftime('%d/%m/%Y'),
+        "Sent to":  find_by_id(message.receiver_id)
+    }
 
 
 def get_conversation(receiver_id: int, cur_user: User):

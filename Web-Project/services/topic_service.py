@@ -1,26 +1,26 @@
 from data_.models import Topic, Reply
 from data_.database import insert_query, read_query, update_query
 from fastapi import Response, HTTPException
-from services.category_service import get_category_by_id
+from services.category_service import get_category_by_id, category_is_private
+from services.users_service import users_access_state
 
 
-
-def search_all_topics(search: str = None or None):  # if category is_private  да не се вижда без права
+def search_all_topics(user, search: str = None or None):  # if category is_private  да не се вижда без права
 
     if search is None:
         data = read_query(
             '''SELECT id, title, date, last_reply, user_id, category_id, is_locked
                FROM topic''')
 
-        #за да излезе резултат отивам в get_user_by_id/ get_categoy_by_id
     else:
         data = read_query(
             '''SELECT id, title, date, last_reply, user_id, category_id, is_locked
                FROM topic 
-               WHERE title LIKE ?''', (f'%{search}%',)) # ако искаме да се търси и по дата например, може да се добави още един ?
+               WHERE title LIKE ?''', (f'%{search}%',))
+
 
     result = [Topic.from_query_result(*row) for row in data]
-    return get_all_topic_response(result)
+    return get_all_topic_response(result, user)
 
 
 def sort_all_topics(topics: list[Topic], sort_by, is_reverse ):
@@ -34,7 +34,7 @@ def sort_all_topics(topics: list[Topic], sort_by, is_reverse ):
     return sorted_topics
 
 
-def get_topic_by_id(id, cur_user):
+def view_topics_by_id(id, cur_user):
     data = read_query(
         '''SELECT id, title, date, last_reply, user_id, category_id, is_locked
                FROM topic
@@ -136,12 +136,20 @@ def create_topic_response(topic, user):
     }
 
 
-def get_all_topic_response(topics):
+def get_all_topic_response(topics, user):
 
     topics_dict = {}
     for data in topics:
-        topics_dict[f'Topic name: {data.title}'] = {
 
+        is_category = category_is_private(data.category_id)
+
+        if is_category:
+
+            user_access = users_access_state(user.id, data.category_id)
+            if not user_access:
+                continue
+
+        topics_dict[f'Topic name: {data.title}'] = {
             'Topic title': data.title,
             'Date': data.cur_date.strftime('%d/%m/%Y'),
             "Last reply is:": data.last_reply
