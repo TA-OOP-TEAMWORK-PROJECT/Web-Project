@@ -1,0 +1,14 @@
+{
+    "python.testing.pytestArgs": [
+        "Web-Project"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./Web-Project",
+        "-p",
+        "test_*.py"
+    ]
+}

@@ -2,7 +2,18 @@ from mariadb import connect
 from mariadb.connections import Connection
 
 def _get_connection() -> Connection:
+<<<<<<< Updated upstream:data/database.py
     return connect(user='root', password='0887123168', host='localhost', port=3306, database='web_project')
+=======
+    return connect(
+        user='root',
+        password='0887123168',
+        host='localhost',
+        port=3306,
+        database='web_project'
+    )
+
+>>>>>>> Stashed changes:Web-Project/data_/database.py
 
 def read_query(sql: str, sql_params=()):
     with _get_connection() as conn:
