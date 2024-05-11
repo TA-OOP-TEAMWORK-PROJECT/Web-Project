@@ -11,10 +11,13 @@ from services.category_service import (get_topics_for_category, grant_category_r
 
 category_router = APIRouter(prefix='/categories')
 
+
 @category_router.get("/") # da ne se vijdat private categories osven za admin ili s prava
 async def read_categories(current_user: Annotated[User, Depends(get_current_active_user)]):
 
     categories = get_all_categories(current_user)
+    if not categories:
+        return {}
     return categories
 
 
