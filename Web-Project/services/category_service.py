@@ -189,7 +189,7 @@ def revoke_category_read_or_write_access(user_id: int, category_id: int, revoke_
         new_can_read = can_read and not revoke_read
         new_can_write = can_write and not revoke_write
 
-        if not new_can_read and not new_can_write:          ### Updated
+        if not new_can_read:          ### Updated
             update_query(
                 "DELETE FROM category_access WHERE user_id = ? AND category_id = ?",
                 (user_id, category_id)

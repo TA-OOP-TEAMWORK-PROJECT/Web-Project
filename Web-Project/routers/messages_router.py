@@ -16,13 +16,13 @@ def create_message(message: MessageCreate, current_user:
 
 
 @message_router.get("/{user_id}")
-def get_conversation_endpoint(user_id: int,
+def get_conversation(user_id: int,
                               current_user: Annotated[User, Depends(get_current_active_user)]):
 
     return message_service.get_conversation(user_id, current_user)
 
 
 @message_router.get("/")
-def get_conversations_endpoint(current_user: Annotated[User, Depends(get_current_active_user)]):
+def get_conversations(current_user: Annotated[User, Depends(get_current_active_user)]):
 
     return message_service.get_conversations(current_user)
