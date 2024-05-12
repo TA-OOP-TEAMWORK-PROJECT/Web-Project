@@ -59,7 +59,7 @@ def create_topic(topic: Topic, category_id: int,
     return topic
 
 
-@topic_router.put('/{topic_id}/replies/{reply_id}')
+@topic_router.put('/{topic_id}/replies/{reply_id}') #
 def view_best_reply(topic_id, reply_id,
                current_user: Annotated[User, Depends(get_current_user)]):
 
