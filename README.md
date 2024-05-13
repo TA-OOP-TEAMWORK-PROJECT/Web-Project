@@ -52,7 +52,7 @@ JSON body:
 - Reply data should contain at least text and is associated with a specific Topic.
 
 ```http
-POST /replies/categories/2/topics/4 HTTP/1.1
+POST /replies/categories/{category_id}/topics/{topic_id} HTTP/1.1
 Host: 127.0.0.1:8001
 
 JSON body:
@@ -89,7 +89,7 @@ limit: Specifies the maximum number of topics per page.
 - Responds with a single Topic resource and a list of Reply resources.
 
 ```http
-GET /topics/categories/2/4 HTTP/1.1
+GET /topics/categories/{category_id}/{topic_id} HTTP/1.1
 Host: 127.0.0.1:8001
 ```
 
@@ -98,7 +98,7 @@ Host: 127.0.0.1:8001
 - Consider adding search, sort, and pagination query params.
 
   ```http
-  GET /categories/2/topics HTTP/1.1
+  GET /categories/{category_id}/topics HTTP/1.1
   Host: 127.0.0.1:8001
   Query Parameters:
 
@@ -147,7 +147,7 @@ Copy code
 - Responds with a list of Messages exchanged between the authenticated user and another user.
 
   ```http
-  GET /messages/1 HTTP/1.1
+  GET /messages/{user_id} HTTP/1.1
   Host: 127.0.0.1:8001
 
     JSON response:
@@ -178,7 +178,7 @@ Copy code
 - A user should be able to change their downvotes to upvotes and vice versa, but a reply can only be upvoted/downvoted once per user.
 
   ```http
-  PUT /replies/categories/2/topics/4/vote/8 HTTP/1.1
+  PUT /replies/categories/{category_id}/topics/{topic_id}/vote/{reply_id} HTTP/1.1
   Host: 127.0.0.1:8001
 
     Request body(Upvote):
@@ -199,7 +199,7 @@ Copy code
 -	Requires authentication
 -	Topic Author can select one best reply to their Topic
     ```http
-    PUT /replies/1/replies/4 HTTP/1.1
+    PUT /topics/{topic_id}/replies/{reply_id} HTTP/1.1
     Host: 127.0.0.1:8001
 
 ### **SHOULD REQUIREMENTS**
@@ -226,7 +226,7 @@ Note: Only admins can create categories. The category name must be provided in t
 - Topics in a private category are only available to category members.
 
   ```http
-  PUT /categories/8/visibility HTTP/1.1
+  PUT /categories/{category_id}/visibility HTTP/1.1
   Host: 127.0.0.1:8001
 
   Request body(to make private):
@@ -254,7 +254,7 @@ Note: Only admins can create categories. The category name must be provided in t
 - Grants a user read access to all topics and replies in the specific private category.
 
   ```http
-  POST /categories/8/users/16/read HTTP/1.1
+  POST /categories/{category_id}/users/{user_id}/read HTTP/1.1
   Host: 127.0.0.1:8001
 
   Response (if successful):
@@ -267,7 +267,7 @@ Note: Only admins can create categories. The category name must be provided in t
 -	A user can now view all Topics and Replies in the specific private Category and post new Topics and Replies
 
   ```http
-  POST /categories/8/users/16/write HTTP/1.1
+  POST /categories/{category_id}/users/{user_id}/write HTTP/1.1
   Host: 127.0.0.1:8001
 
   Response (if successful):
@@ -280,7 +280,7 @@ Note: Only admins can create categories. The category name must be provided in t
 -	A user loses their read or write access to a category
 
   ```http
-  PUT /categories/8/users/16/revoke HTTP/1.1
+  PUT /categories/{category_id}/users/{user_id}/revoke HTTP/1.1
   Host: 127.0.0.1:8001
   Revoke read:
   {
@@ -308,7 +308,7 @@ Note: Only admins can create categories. The category name must be provided in t
 - Responds with a list of all users for a specific Private Category along with their Access Level.
 
   ```http
-  GET /categories/8/privileged-users HTTP/1.1
+  GET /categories/{category_id}/privileged-users HTTP/1.1
   Host: 127.0.0.1:8001
   JSON Response:
   {
@@ -327,7 +327,7 @@ Note: Only admins can create categories. The category name must be provided in t
 - Once locked, a Category can no longer accept new Topics.
 
   ```http
-  PUT /topics/lock/8 HTTP/1.1
+  PUT /topics/lock/{category_id} HTTP/1.1
   Host: 127.0.0.1:8001
   JSON Response:
   "Category has been locked!"
@@ -339,57 +339,19 @@ Note: Only admins have the authority to lock categories. Once locked, the catego
 
 **If Not Admin:**
   ```http
-  PUT /topics/lock/4 HTTP/1.1
+  PUT /topics/lock/{topic_id} HTTP/1.1
   Host: 127.0.0.1:8001
   JSON Response:
   "You are not authorized!"
 ```
 **If Admin:**
 ```http
-PUT /topics/lock/4 HTTP/1.1
+PUT /topics/lock/{topic_id} HTTP/1.1
 Host: 127.0.0.1:8001
 JSON Response:
 "Topic has been locked!"
 ```
 
-Guidelines
-
-**For each endpoint, your responsibility as a developer is to:**
--	Determine the URL
--	Decide on the HTTP method
--	Create the model for the request and response data
--	Think of necessary validations and error responses
-
-**The Forum System consists of at least User, Topic, Category, Reply, and Message resources.**
--	Determine the necessary database structure
--	You are free to add as many properties/columns as you like, but the minimum required functionality must be supported.
--	Determine the database relations
--	You are free to add as many tables, columns and relations as you need
-
-You are allowed to create new resources and endpoints if they fit the Forum System idea.
-Start with the must Requirements and plan your time to implement as many should requirements as possible. It will be great to also create a web client, but it is the last of your tasks as it is a could requirement.
-
-
-
-## **TECHNICAL REQUIREMENTS**
-
-**General**
-
-The project adheres to industry best practices, including:
-
-Writing simple and readable code
-Following REST API design best practices
-Encapsulating business logic in separate layers
-Thoroughly covering business logic with unit tests
-Anticipating future changes and scalability needs
-Git commits provide a clear overview of the project's development, highlighting key features and contributors. The GitHub repository contains the complete application source code, along with any necessary scripts.
-
-Optional features like integration with Continuous Integration servers and hosting on public platforms further enhance the project's functionality and accessibility.
-
-For detailed setup instructions and project information, refer to the README.md file in the GitHub repository.
-
-Teamwork Guidelines:
-Please refer to the Teamwork Guidelines document for effective collaboration and project management.
 
 ## **Required Packages**
 To run this project, you need to install the following packages:
