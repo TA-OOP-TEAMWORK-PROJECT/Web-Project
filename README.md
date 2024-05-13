@@ -7,6 +7,10 @@ This project aims to create a robust Forum System backend using FastAPI, offerin
 
 The system allows users to create and view topics, exchange messages, and manage user-related activities, while administrators oversee users, topics, and categories.
 
+**Database**
+
+![database](https://github.com/TA-OOP-TEAMWORK-PROJECT/Web-Project/assets/156197933/88e56553-ba2c-4382-9c7f-fa1ba08b508d)
+
 ## **Rest assured, the API meets modern standards and offers a comprehensive set of functionalities, including:**
 
 
